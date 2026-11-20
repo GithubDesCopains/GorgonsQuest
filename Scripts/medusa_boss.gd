@@ -193,6 +193,7 @@ func build_visual():
 		serpent.position = Vector2(-48 + index * 24, -68 - (8 if index % 2 == 0 else 0))
 		serpent.color = Color("#8bc568")
 		body.add_child(serpent)
+	fit_parts_to_body()
 	build_health_bar()
 
 func build_health_bar():

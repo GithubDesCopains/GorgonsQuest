@@ -208,6 +208,7 @@ func build_visual():
 	snake_tail.position = Vector2(28, 34)
 	snake_tail.color = Color("#54a56b")
 	body.add_child(snake_tail)
+	fit_parts_to_body()
 	build_health_bar()
 
 func build_health_bar():

@@ -194,6 +194,7 @@ func build_visual():
 		eye.position = head.position + Vector2(10, 9)
 		eye.color = Color("#f4e79a")
 		body.add_child(eye)
+	fit_parts_to_body()
 	build_health_bar()
 
 func build_health_bar():

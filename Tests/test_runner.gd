@@ -20,6 +20,7 @@ func _init():
 	run_test("test_task_9_1_world_music_generation", test_task_9_1_world_music_generation)
 	run_test("test_task_9_2_9_3_event_music_and_sfx", test_task_9_2_9_3_event_music_and_sfx)
 	run_test("test_untrusted_level_and_save_data_never_crash", test_untrusted_level_and_save_data_never_crash)
+	run_test("test_boss_body_parts_sit_on_the_body", test_boss_body_parts_sit_on_the_body)
 	run_test("test_slide_path_calculation", test_slide_path_calculation)
 	run_test("test_task_1_1_enemy_squash", test_task_1_1_enemy_squash)
 	run_test("test_task_1_2_shatter_statue", test_task_1_2_shatter_statue)
@@ -297,6 +298,20 @@ func test_untrusted_level_and_save_data_never_crash() -> String:
 	elif tampered["music_volume"] != 1.0 or tampered["sfx_volume"] != 1.0:
 		failure = "Volumes must fall back or clamp to 0..1"
 	sm.free()
+	return failure
+
+func test_boss_body_parts_sit_on_the_body() -> String:
+	"""Parts are authored around the boss origin; they must be shifted so they land on the body, not beside it."""
+	var boss := PuzzleBoss.new()
+	boss.build_visual()
+	var eye: Control = boss.body.get_child(0)
+	var expected := Vector2(-25, -10) - boss.body.position   # authored (-25,-10) around the origin, body drawn from its corner
+	var failure := ""
+	if eye.position != expected:
+		failure = "Boss eye should be at %s inside its body, got %s" % [str(expected), str(eye.position)]
+	elif not Rect2(Vector2.ZERO, boss.body.size).has_point(eye.position):
+		failure = "Boss eye must lie inside the body rectangle"
+	boss.free()
 	return failure
 
 func test_slide_path_calculation():

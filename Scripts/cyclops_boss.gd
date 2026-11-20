@@ -191,6 +191,7 @@ func build_visual():
 	horn_right.position = Vector2(46, -72)
 	horn_right.color = Color("#ead0a0")
 	body.add_child(horn_right)
+	fit_parts_to_body()
 	build_health_bar()
 
 func build_health_bar():

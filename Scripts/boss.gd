@@ -54,6 +54,7 @@ func build_visual():
 	eye.position = Vector2(-25, -10)
 	eye.color = Color("#f5d989")
 	body.add_child(eye)
+	fit_parts_to_body()
 	var bar_back = ColorRect.new()
 	bar_back.name = "HealthBack"
 	bar_back.size = Vector2(170, 16)
@@ -66,6 +67,15 @@ func build_visual():
 	health_fill.size = Vector2(164, 10)
 	health_fill.color = Color("#e25355")
 	add_child(health_fill)
+
+func fit_parts_to_body() -> void:
+	"""Body parts are authored around the boss origin, but a ColorRect child is placed from the body's own
+	top-left corner. Shift every part back so eyes, horns and necks land on the body they belong to."""
+	if body == null:
+		return
+	for part in body.get_children():
+		if part is Control:
+			part.position -= body.position
 
 func update_health_bar():
 	if health_fill:
