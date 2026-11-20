@@ -7,6 +7,11 @@ const TILE_CODES = {".": Constants.TileType.GROUND, "#": Constants.TileType.WALL
 const BONUS_KINDS = ["ambrosia", "gorgon_orb"]
 const MIRROR_ORIENTATIONS = ["slash", "backslash"]
 const DIRECTIONS = {"right": Vector2i.RIGHT, "down": Vector2i.DOWN, "left": Vector2i.LEFT, "up": Vector2i.UP}
+const MAX_FILE_BYTES := 262144   # real levels are ~3 KB; level files can come from outside the game
+const MAX_NAME_LENGTH := 100
+const MAX_TIME_LIMIT := 3600
+const MIN_SPAWN_INTERVAL := 0.5  # a spawner at 0 s would create an enemy every frame
+const MAX_BOSS_HEALTH := 99
 
 func load_file(path: String) -> Dictionary:
 	if not FileAccess.file_exists(path):
@@ -14,6 +19,8 @@ func load_file(path: String) -> Dictionary:
 	var file = FileAccess.open(path, FileAccess.READ)
 	if file == null:
 		return {"ok": false, "error": "Could not open level JSON: %s" % path}
+	if file.get_length() > MAX_FILE_BYTES:
+		return {"ok": false, "error": "Level JSON is too large (max %d bytes): %s" % [MAX_FILE_BYTES, path]}
 	return parse_text(file.get_as_text())
 
 func parse_text(text: String) -> Dictionary:
@@ -50,10 +57,57 @@ func validate_document(doc: Dictionary) -> String:
 	for key in ["soul_urns", "enemies", "spawners", "springs", "rotators", "warps", "slippery_tiles", "one_way_gates", "conveyors", "bonus_items", "push_blocks", "mirrors", "switches", "doors"]:
 		if doc.has(key) and typeof(doc[key]) != TYPE_ARRAY:
 			return "%s must be an array" % key
+	var type_error := validate_value_types(doc)
+	if not type_error.is_empty():
+		return type_error
 	var mechanics_error := validate_mechanics(doc)
 	if not mechanics_error.is_empty():
 		return mechanics_error
 	return validate_entity_positions(doc)
+
+func validate_value_types(doc: Dictionary) -> String:
+	"""Scalar fields must have the right type and range: a wrong type used to crash the loader at runtime."""
+	if str(doc["name"]).length() > MAX_NAME_LENGTH:
+		return "name must be at most %d characters" % MAX_NAME_LENGTH
+	if doc.has("time_limit") and not _is_finite_number(doc["time_limit"]):
+		return "time_limit must be a number"
+	for key in ["enemies", "spawners"]:
+		for entry in doc.get(key, []):
+			if typeof(entry) != TYPE_DICTIONARY:
+				continue  # reported with its position by validate_entity_positions
+			if entry.has("type") and typeof(entry["type"]) != TYPE_STRING:
+				return "%s type must be a string" % key
+			if entry.has("pattern"):
+				if typeof(entry["pattern"]) != TYPE_ARRAY:
+					return "%s pattern must be an array of directions" % key
+				for step in entry["pattern"]:
+					if typeof(step) != TYPE_STRING:
+						return "%s pattern entries must be direction names" % key
+			if entry.has("interval") and (not _is_finite_number(entry["interval"]) or float(entry["interval"]) <= 0.0):
+				return "%s interval must be a positive number" % key
+	for rotator in doc.get("rotators", []):
+		if typeof(rotator) == TYPE_DICTIONARY and rotator.has("quarter_turns") and not is_integer_number(rotator["quarter_turns"]):
+			return "rotators quarter_turns must be an integer"
+	for key in ["switches", "doors"]:
+		for entry in doc.get(key, []):
+			if typeof(entry) == TYPE_DICTIONARY and typeof(entry.get("id", "")) != TYPE_STRING:
+				return "%s id must be a string" % key
+	for warp in doc.get("warps", []):
+		if typeof(warp) == TYPE_DICTIONARY and typeof(warp.get("pair_id", "")) != TYPE_STRING:
+			return "warp pair_id must be a string"
+	var boss = doc.get("boss", null)
+	if typeof(boss) == TYPE_DICTIONARY:
+		for key in ["type", "name", "minion_type"]:
+			if boss.has(key) and typeof(boss[key]) != TYPE_STRING:
+				return "boss.%s must be a string" % key
+		if boss.has("spawn_interval") and (not _is_finite_number(boss["spawn_interval"]) or float(boss["spawn_interval"]) <= 0.0):
+			return "boss.spawn_interval must be a positive number"
+		if is_integer_number(boss.get("health", 0)) and int(boss.get("health", 0)) > MAX_BOSS_HEALTH:
+			return "boss.health must be at most %d" % MAX_BOSS_HEALTH
+	return ""
+
+func _is_finite_number(value) -> bool:
+	return (typeof(value) == TYPE_INT or typeof(value) == TYPE_FLOAT) and is_finite(float(value))
 
 func validate_mechanics(doc: Dictionary) -> String:
 	"""Mirrors, switches and doors: positions, orientation/direction. Pairing switches with doors is only
@@ -157,7 +211,7 @@ func document_to_level(doc: Dictionary) -> LevelData:
 	var data = LevelData.new(int(doc["world"]), int(doc["level"]))
 	data.level_name = str(doc["name"])
 	data.player_start = vector_from_array(doc["player_start"])
-	data.time_limit = int(doc.get("time_limit", 90))
+	data.time_limit = clampi(int(doc.get("time_limit", 90)), 0, MAX_TIME_LIMIT)
 	data.grid_layout = []
 	for row_text in doc["grid"]:
 		var row: Array = []
@@ -169,11 +223,11 @@ func document_to_level(doc: Dictionary) -> LevelData:
 	for enemy in doc.get("enemies", []):
 		data.enemies.append({"type": str(enemy.get("type", "noggle")), "pos": vector_from_array(enemy["pos"]), "pattern": directions_from_names(enemy.get("pattern", []))})
 	for spawner in doc.get("spawners", []):
-		data.spawners.append({"type": str(spawner.get("type", "noggle")), "pos": vector_from_array(spawner["pos"]), "pattern": directions_from_names(spawner.get("pattern", [])), "interval": float(spawner.get("interval", 5.0))})
+		data.spawners.append({"type": str(spawner.get("type", "noggle")), "pos": vector_from_array(spawner["pos"]), "pattern": directions_from_names(spawner.get("pattern", [])), "interval": maxf(float(spawner.get("interval", 5.0)), MIN_SPAWN_INTERVAL)})
 	for spring in doc.get("springs", []):
 		data.springs.append({"pos": vector_from_array(spring["pos"]), "direction": direction_from_name(str(spring.get("direction", "up")))})
 	for rotator in doc.get("rotators", []):
-		data.rotators.append({"pos": vector_from_array(rotator["pos"]), "quarter_turns": int(rotator.get("quarter_turns", 1))})
+		data.rotators.append({"pos": vector_from_array(rotator["pos"]), "quarter_turns": 1 if int(rotator.get("quarter_turns", 1)) >= 0 else -1})  # engine only reads the sign
 	for warp in doc.get("warps", []):
 		data.warps.append({"pos": vector_from_array(warp["pos"]), "pair_id": str(warp.get("pair_id", ""))})
 	for pos in doc.get("slippery_tiles", []):
@@ -201,7 +255,7 @@ func document_to_level(doc: Dictionary) -> LevelData:
 		data.boss_position = vector_from_array(boss_data.get("pos", [8, 7]))
 		data.boss_arena = Rect2i(vector_from_array(boss_data.get("arena_pos", [4, 3])), vector_from_array(boss_data.get("arena_size", [9, 9])))
 		data.boss_minion_type = str(boss_data.get("minion_type", "noggle"))
-		data.boss_spawn_interval = float(boss_data.get("spawn_interval", 4.0))
+		data.boss_spawn_interval = maxf(float(boss_data.get("spawn_interval", 4.0)), MIN_SPAWN_INTERVAL)
 	return data
 
 func vector_from_array(value: Array) -> Vector2i:

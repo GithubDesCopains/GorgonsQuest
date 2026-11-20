@@ -19,6 +19,7 @@ func _init():
 	run_test("test_sound_manager_procedural_audio", test_sound_manager_procedural_audio)
 	run_test("test_task_9_1_world_music_generation", test_task_9_1_world_music_generation)
 	run_test("test_task_9_2_9_3_event_music_and_sfx", test_task_9_2_9_3_event_music_and_sfx)
+	run_test("test_untrusted_level_and_save_data_never_crash", test_untrusted_level_and_save_data_never_crash)
 	run_test("test_slide_path_calculation", test_slide_path_calculation)
 	run_test("test_task_1_1_enemy_squash", test_task_1_1_enemy_squash)
 	run_test("test_task_1_2_shatter_statue", test_task_1_2_shatter_statue)
@@ -242,6 +243,61 @@ func test_task_9_2_9_3_event_music_and_sfx() -> String:
 		return "Boss music must not activate while MUSIC_ENABLED is false"
 	sm.free()
 	return ""
+
+func test_untrusted_level_and_save_data_never_crash() -> String:
+	"""Hand-edited level and save files must be rejected or clamped, never raise a script error."""
+	var loader := LevelJsonLoader.new()
+	var base: Dictionary = JSON.parse_string(FileAccess.get_file_as_string("res://Data/Levels/world_1_level_1.json"))
+	var bad_levels := {
+		"spawner interval as dict": func(d): d["spawners"][0]["interval"] = {},
+		"spawner interval zero": func(d): d["spawners"][0]["interval"] = 0,
+		"spawner interval string": func(d): d["spawners"][0]["interval"] = "x",
+		"spawner pattern string": func(d): d["spawners"][0]["pattern"] = "right",
+		"spawner pattern nested": func(d): d["spawners"][0]["pattern"] = [[], {}],
+		"spawner type array": func(d): d["spawners"][0]["type"] = [],
+		"rotator turns dict": func(d): d["rotators"] = [{"pos": [3, 9], "quarter_turns": {}}],
+		"time limit string": func(d): d["time_limit"] = "abc",
+		"time limit dict": func(d): d["time_limit"] = {},
+		"boss name dict": func(d): d["boss"] = {"health": 3, "name": {}},
+		"boss spawn interval dict": func(d): d["boss"] = {"health": 3, "spawn_interval": {}},
+		"boss health huge": func(d): d["boss"] = {"health": 1e18},
+		"switch id dict": func(d): d["switches"] = [{"pos": [3, 9], "id": {}}],
+		"name too long": func(d): d["name"] = "x".repeat(5000),
+	}
+	for case_name in bad_levels:
+		var doc: Dictionary = base.duplicate(true)
+		bad_levels[case_name].call(doc)
+		if loader.parse_text(JSON.stringify(doc)).get("ok", true):
+			return "Malformed level must be rejected: %s" % case_name
+	# Extreme but well-typed values are accepted and clamped to safe ranges.
+	var clamped: Dictionary = base.duplicate(true)
+	clamped["time_limit"] = 1e9
+	clamped["spawners"][0]["interval"] = 0.0001
+	clamped["rotators"] = [{"pos": [3, 9], "quarter_turns": -7}]
+	var result: Dictionary = loader.parse_text(JSON.stringify(clamped))
+	if not result.get("ok", false):
+		return "Extreme but well-typed level should load: %s" % result.get("error", "")
+	var data: LevelData = result["data"]
+	if data.time_limit != LevelJsonLoader.MAX_TIME_LIMIT:
+		return "time_limit must be clamped to %d, got %d" % [LevelJsonLoader.MAX_TIME_LIMIT, data.time_limit]
+	if data.spawners[0]["interval"] < LevelJsonLoader.MIN_SPAWN_INTERVAL:
+		return "Spawner interval must be clamped to the minimum"
+	if data.rotators[0]["quarter_turns"] != -1:
+		return "Rotator direction must stay counter-clockwise (-1), got %d" % data.rotators[0]["quarter_turns"]
+	# Save files: wrong types, NaN-like and absurd numbers fall back or clamp.
+	var sm = load("res://Scripts/save_manager.gd").new()
+	var tampered: Dictionary = sm._validated_data({"version": 1, "max_world": [], "max_level_w1": "abc", "total_score": 1e30, "best_1_1": {}, "best_1_2": 5, "music_volume": [], "sfx_volume": 9.0, "timestamp": {}})
+	var failure := ""
+	if tampered["max_world"] != 1 or tampered["max_level_w1"] != 1:
+		failure = "Wrongly typed progress must fall back to defaults"
+	elif tampered["total_score"] != sm.MAX_SCORE:
+		failure = "Absurd score must clamp to the maximum"
+	elif tampered["best_1_1"] != 0 or tampered["best_1_2"] != 5:
+		failure = "Best scores must be sanitised per key"
+	elif tampered["music_volume"] != 1.0 or tampered["sfx_volume"] != 1.0:
+		failure = "Volumes must fall back or clamp to 0..1"
+	sm.free()
+	return failure
 
 func test_slide_path_calculation():
 	var gm = GridManager.new()

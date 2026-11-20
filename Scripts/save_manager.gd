@@ -44,6 +44,11 @@ func load_game() -> void:
 		push_warning("SaveManager: cannot open save file; using defaults.")
 		_reset_to_defaults()
 		return
+	if file.get_length() > 65536:   # a real save is under 1 KB
+		file.close()
+		push_warning("SaveManager: save file is too large; using defaults.")
+		_reset_to_defaults()
+		return
 	var text := file.get_as_text()
 	file.close()
 	var parser := JSON.new()
@@ -117,19 +122,27 @@ func set_sfx_volume(v: float) -> void:
 
 # â”€â”€ Private â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
+const MAX_SCORE := 2000000000   # keeps int(float) well inside 64-bit range and the score display readable
+
+func _num(value: Variant, fallback: float) -> float:
+	"""A save file can be edited by hand: anything that is not a finite number falls back instead of crashing."""
+	if (typeof(value) == TYPE_INT or typeof(value) == TYPE_FLOAT) and is_finite(float(value)):
+		return float(value)
+	return fallback
+
 func _validated_data(parsed: Dictionary) -> Dictionary:
 	var clean := _default_data()
-	clean["timestamp"] = int(parsed.get("timestamp", 0))
-	clean["max_world"] = clampi(int(parsed.get("max_world", 1)), 1, 4)
-	clean["total_score"] = maxi(0, int(parsed.get("total_score", 0)))
+	clean["timestamp"] = int(clampf(_num(parsed.get("timestamp", 0), 0.0), 0.0, 1.0e12))
+	clean["max_world"] = clampi(int(clampf(_num(parsed.get("max_world", 1), 1.0), 1.0, 4.0)), 1, 4)
+	clean["total_score"] = int(clampf(_num(parsed.get("total_score", 0), 0.0), 0.0, MAX_SCORE))
 	for world in range(1, 5):
 		var level_key := "max_level_w%d" % world
-		clean[level_key] = clampi(int(parsed.get(level_key, 1)), 1, 17)
+		clean[level_key] = clampi(int(clampf(_num(parsed.get(level_key, 1), 1.0), 1.0, 17.0)), 1, 17)
 	for key in parsed.keys():
-		if key is String and key.begins_with("best_"):
-			clean[key] = maxi(0, int(parsed[key]))
-	clean["music_volume"] = clampf(float(parsed.get("music_volume", 1.0)), 0.0, 1.0)
-	clean["sfx_volume"] = clampf(float(parsed.get("sfx_volume", 1.0)), 0.0, 1.0)
+		if key is String and key.length() <= 16 and key.begins_with("best_"):
+			clean[key] = int(clampf(_num(parsed[key], 0.0), 0.0, MAX_SCORE))
+	clean["music_volume"] = clampf(_num(parsed.get("music_volume", 1.0), 1.0), 0.0, 1.0)
+	clean["sfx_volume"] = clampf(_num(parsed.get("sfx_volume", 1.0), 1.0), 0.0, 1.0)
 	return clean
 
 func _default_data() -> Dictionary:
