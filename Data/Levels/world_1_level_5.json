@@ -1,0 +1,39 @@
+{
+	"world": 1,
+	"level": 5,
+	"name": "Garden E - Polished Court",
+	"source_note": "Original proposal: slippery lanes. Slide along the polished marble to the urns at the lane ends.",
+	"time_limit": 120,
+	"player_start": [7, 11],
+	"grid": [
+		"~~~~~~~~~~~~~~~~",
+		"~~~~~~~~~~~~~~~~",
+		"~~~~~~~~~~~~~~~~",
+		"~~~..........~~~",
+		"~~~..........~~~",
+		"~~~.....#....~~~",
+		"~~~..........~~~",
+		"~~~..#.......~~~",
+		"~~~..........~~~",
+		"~~~.....#....~~~",
+		"~~~..........~~~",
+		"~~~..........~~~",
+		"~~~~~~~~~~~~~~~~",
+		"~~~~~~~~~~~~~~~~",
+		"~~~~~~~~~~~~~~~~"
+	],
+	"soul_urns": [[11, 6], [4, 10], [8, 3]],
+	"enemies": [],
+	"spawners": [
+		{"type": "noggle", "pos": [6, 4], "pattern": ["right", "left"], "interval": 5.0},
+		{"type": "noggle", "pos": [10, 8], "pattern": ["left", "right"], "interval": 5.0}
+	],
+	"springs": [],
+	"rotators": [],
+	"warps": [],
+	"slippery_tiles": [[5, 6], [6, 6], [7, 6], [8, 6], [9, 6], [10, 6], [5, 10], [6, 10], [7, 10], [8, 10], [9, 10], [10, 10]],
+	"one_way_gates": [],
+	"conveyors": [],
+	"push_blocks": [],
+	"bonus_items": [{"kind": "ambrosia", "pos": [3, 3]}, {"kind": "gorgon_orb", "pos": [12, 11]}]
+}

@@ -1,0 +1,7 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://Scenes/flame_beast.gd" id="1_flame_beast"]
+
+[node name="FlameBeast" type="CharacterBody2D"]
+script = ExtResource("1_flame_beast")
+groups = ["enemies"]

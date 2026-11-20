@@ -1,0 +1,42 @@
+{
+	"world": 1,
+	"level": 15,
+	"name": "Garden O - Grand Crossing",
+	"source_note": "Original proposal: finale of the world. Bridge north and east, with a jumper, a wall hugger, a shadow and a flame beast.",
+	"time_limit": 210,
+	"player_start": [3, 10],
+	"grid": [
+		"~~~~~~~~~~~~~~~~",
+		"~~~....~~~~~~~~~",
+		"~~~....~~~~~~~~~",
+		"~~~~~~~~~~~~~~~~",
+		"~~........~~~~~~",
+		"~~........~....~",
+		"~~........~....~",
+		"~~...##...~....~",
+		"~~...##...~....~",
+		"~~........~....~",
+		"~~........~....~",
+		"~~........~~~~~~",
+		"~~~~~~~~~~~~~~~~",
+		"~~~~~~~~~~~~~~~~",
+		"~~~~~~~~~~~~~~~~"
+	],
+	"soul_urns": [[4, 1], [5, 2], [13, 6], [12, 9], [8, 11]],
+	"enemies": [],
+	"spawners": [
+		{"type": "noggle", "pos": [4, 5], "pattern": ["right", "left"], "interval": 5.0},
+		{"type": "jumper", "pos": [8, 5], "pattern": ["right", "left"], "interval": 8.0},
+		{"type": "wall_hugger", "pos": [9, 9], "pattern": ["right", "left"], "interval": 8.0},
+		{"type": "hades_shadow", "pos": [12, 6], "pattern": ["right", "left"], "interval": 10.0},
+		{"type": "flame_beast", "pos": [13, 10], "pattern": ["right", "left"], "interval": 10.0}
+	],
+	"springs": [],
+	"rotators": [],
+	"warps": [],
+	"slippery_tiles": [],
+	"one_way_gates": [],
+	"conveyors": [],
+	"push_blocks": [],
+	"bonus_items": [{"kind": "ambrosia", "pos": [6, 5]}, {"kind": "gorgon_orb", "pos": [3, 8]}]
+}

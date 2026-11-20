@@ -1,0 +1,19 @@
+[gd_scene load_steps=4 format=3 uid="uid://chrf5kdp83kqx"]
+
+[ext_resource type="Script" path="res://Scripts/game_manager.gd" id="1_manager"]
+[ext_resource type="PackedScene" path="res://Scenes/player.tscn" id="2_player"]
+[ext_resource type="Script" path="res://Scenes/main_scene.gd" id="3_main"]
+
+[node name="Main" type="Node2D"]
+script = ExtResource("3_main")
+
+[node name="GameManager" type="Node" parent="."]
+script = ExtResource("1_manager")
+
+[node name="Camera2D" type="Camera2D" parent="."]
+position = Vector2(960, 540)
+
+[node name="TileMapLayer" type="Node2D" parent="."]
+
+[node name="Player" parent="." instance=ExtResource("2_player")]
+position = Vector2(564, 540)

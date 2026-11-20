@@ -1,0 +1,42 @@
+{
+	"world": 1,
+	"level": 12,
+	"name": "Garden L - Aerial Pass",
+	"source_note": "Original proposal: birdies fly over the lake, zappers swim in it. Bridge two cells along row 7 to reach the central islet.",
+	"time_limit": 150,
+	"player_start": [7, 10],
+	"grid": [
+		"~~~~~~~~~~~~~~~~",
+		"~~~~~~~~~~~~~~~~",
+		"~~~~~~~~~~~~~~~~",
+		"~~............~~",
+		"~~............~~",
+		"~~...~~~~~~...~~",
+		"~~...~~..~~...~~",
+		"~~...~~..~~...~~",
+		"~~...~~..~~...~~",
+		"~~...~~~~~~...~~",
+		"~~............~~",
+		"~~............~~",
+		"~~~~~~~~~~~~~~~~",
+		"~~~~~~~~~~~~~~~~",
+		"~~~~~~~~~~~~~~~~"
+	],
+	"soul_urns": [[7, 6], [8, 7], [7, 8], [12, 11]],
+	"enemies": [],
+	"spawners": [
+		{"type": "zapper", "pos": [6, 5], "pattern": ["right", "left"], "interval": 6.0},
+		{"type": "zapper", "pos": [9, 9], "pattern": ["left", "right"], "interval": 6.0},
+		{"type": "birdie", "pos": [3, 4], "pattern": ["right", "left"], "interval": 8.0},
+		{"type": "birdie", "pos": [12, 5], "pattern": ["left", "right"], "interval": 8.0},
+		{"type": "noggle", "pos": [3, 8], "pattern": ["right", "left"], "interval": 5.0}
+	],
+	"springs": [],
+	"rotators": [],
+	"warps": [],
+	"slippery_tiles": [],
+	"one_way_gates": [],
+	"conveyors": [],
+	"push_blocks": [],
+	"bonus_items": [{"kind": "ambrosia", "pos": [3, 10]}, {"kind": "gorgon_orb", "pos": [12, 3]}]
+}

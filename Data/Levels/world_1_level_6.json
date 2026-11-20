@@ -1,0 +1,39 @@
+{
+	"world": 1,
+	"level": 6,
+	"name": "Garden F - Heavy Blocks",
+	"source_note": "Original proposal: two-cell channel. Push the first dark block up column 7 to sink it, then the second one over it.",
+	"time_limit": 130,
+	"player_start": [9, 9],
+	"grid": [
+		"~~~~~~~~~~~~~~~~",
+		"~~~~~~~~~~~~~~~~",
+		"~~~~~......~~~~~",
+		"~~~~~......~~~~~",
+		"~~~~~......~~~~~",
+		"~~~~~~~~~~~~~~~~",
+		"~~~~~~~~~~~~~~~~",
+		"~~~~........~~~~",
+		"~~~..........~~~",
+		"~~~..........~~~",
+		"~~~..........~~~",
+		"~~~~........~~~~",
+		"~~~~~~~~~~~~~~~~",
+		"~~~~~~~~~~~~~~~~",
+		"~~~~~~~~~~~~~~~~"
+	],
+	"soul_urns": [[6, 3], [8, 3], [10, 3]],
+	"enemies": [],
+	"spawners": [
+		{"type": "noggle", "pos": [4, 9], "pattern": ["right", "left"], "interval": 5.0},
+		{"type": "noggle", "pos": [11, 9], "pattern": ["left", "right"], "interval": 5.0}
+	],
+	"springs": [],
+	"rotators": [],
+	"warps": [],
+	"slippery_tiles": [],
+	"one_way_gates": [],
+	"conveyors": [],
+	"push_blocks": [[7, 8], [7, 10]],
+	"bonus_items": [{"kind": "ambrosia", "pos": [8, 2]}, {"kind": "gorgon_orb", "pos": [12, 8]}]
+}

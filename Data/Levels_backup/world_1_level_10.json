@@ -1,0 +1,104 @@
+{
+  "world": 1,
+  "level": 10,
+  "name": "Garden J",
+  "time_limit": 90,
+  "player_start": [
+    8,
+    12
+  ],
+  "grid": [
+    "################",
+    "#~~~~~~~~~~~~~~#",
+    "#~...~~..~~...~#",
+    "#~...~~..~~...~#",
+    "#~~..~~..~~..~~#",
+    "#~~~........~~~#",
+    "#~............~#",
+    "#~............~#",
+    "#~............~#",
+    "#~~..........~~#",
+    "#~~~........~~~#",
+    "#~~~~......~~~~#",
+    "#~~~~~....~~~~~#",
+    "#~~~~~~~~~~~~~~#",
+    "################"
+  ],
+  "soul_urns": [
+    [
+      3,
+      4
+    ],
+    [
+      7,
+      4
+    ],
+    [
+      11,
+      4
+    ],
+    [
+      6,
+      9
+    ],
+    [
+      9,
+      9
+    ]
+  ],
+  "enemies": [
+    {
+      "type": "noggle",
+      "pos": [
+        2,
+        2
+      ],
+      "pattern": [
+        "right",
+        "right",
+        "left",
+        "left"
+      ]
+    },
+    {
+      "type": "birdie",
+      "pos": [
+        3,
+        2
+      ],
+      "pattern": [
+        "down",
+        "down",
+        "up",
+        "up"
+      ]
+    },
+    {
+      "type": "noggle",
+      "pos": [
+        4,
+        2
+      ],
+      "pattern": [
+        "right",
+        "down",
+        "left",
+        "up"
+      ]
+    },
+    {
+      "type": "birdie",
+      "pos": [
+        7,
+        2
+      ],
+      "pattern": [
+        "right",
+        "right",
+        "left",
+        "left"
+      ]
+    }
+  ],
+  "source_note": "Provisional terrain transcription from supplied Garden Land reference image; verify tile/object coordinates against original game capture."
+}

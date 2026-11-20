@@ -1,0 +1,43 @@
+{
+	"world": 1,
+	"level": 9,
+	"name": "Garden I - Toll Gates",
+	"source_note": "Original proposal: one-way gates. Enter the walled chamber by the west gate, leave by the east gate.",
+	"time_limit": 130,
+	"player_start": [7, 12],
+	"grid": [
+		"~~~~~~~~~~~~~~~~",
+		"~~~~~~~~~~~~~~~~",
+		"~~............~~",
+		"~~............~~",
+		"~~..########..~~",
+		"~~..#......#..~~",
+		"~~..#......#..~~",
+		"~~.........#..~~",
+		"~~..#.........~~",
+		"~~..#......#..~~",
+		"~~..########..~~",
+		"~~............~~",
+		"~~............~~",
+		"~~~~~~~~~~~~~~~~",
+		"~~~~~~~~~~~~~~~~"
+	],
+	"soul_urns": [[6, 6], [9, 6], [8, 9]],
+	"enemies": [],
+	"spawners": [
+		{"type": "noggle", "pos": [3, 3], "pattern": ["right", "left"], "interval": 5.0},
+		{"type": "noggle", "pos": [12, 11], "pattern": ["left", "right"], "interval": 5.0},
+		{"type": "noggle", "pos": [7, 8], "pattern": ["right", "left"], "interval": 6.0}
+	],
+	"springs": [],
+	"rotators": [],
+	"warps": [],
+	"slippery_tiles": [],
+	"one_way_gates": [
+		{"pos": [4, 7], "direction": "right"},
+		{"pos": [11, 8], "direction": "right"}
+	],
+	"conveyors": [],
+	"push_blocks": [],
+	"bonus_items": [{"kind": "gorgon_orb", "pos": [9, 2]}, {"kind": "ambrosia", "pos": [2, 12]}]
+}

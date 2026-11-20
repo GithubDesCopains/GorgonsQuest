@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://c5vx8m2qqajw8"]
+
+[ext_resource type="Script" path="res://Scenes/stone_pillar.gd" id="1_pillar"]
+
+[node name="StonePillar" type="Node2D"]
+script = ExtResource("1_pillar")

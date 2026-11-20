@@ -1,0 +1,40 @@
+{
+	"world": 1,
+	"level": 14,
+	"name": "Garden N - Violet Gate",
+	"source_note": "Original proposal: violet tiles stop enemies, only the hero crosses them. A pusher patrols the channel and dissolves bridges.",
+	"time_limit": 150,
+	"player_start": [8, 7],
+	"grid": [
+		"~~~~~~~~~~~~~~~~",
+		"~~~~~~~~~~~~~~~~",
+		"~~~~~......~~~~~",
+		"~~~~~......~~~~~",
+		"~~~~~......~~~~~",
+		"~~~~~~~~~~~~~~~~",
+		"~~~~........~~~~",
+		"~~~..........~~~",
+		"~~~vvvvvvvvvv~~~",
+		"~~~..........~~~",
+		"~~~~........~~~~",
+		"~~~~~......~~~~~",
+		"~~~~~~~~~~~~~~~~",
+		"~~~~~~~~~~~~~~~~",
+		"~~~~~~~~~~~~~~~~"
+	],
+	"soul_urns": [[6, 3], [8, 2], [10, 3]],
+	"enemies": [],
+	"spawners": [
+		{"type": "noggle", "pos": [4, 9], "pattern": ["right", "left"], "interval": 5.0},
+		{"type": "noggle", "pos": [11, 9], "pattern": ["left", "right"], "interval": 5.0},
+		{"type": "pusher", "pos": [12, 5], "pattern": ["left", "right"], "interval": 10.0}
+	],
+	"springs": [],
+	"rotators": [],
+	"warps": [],
+	"slippery_tiles": [],
+	"one_way_gates": [],
+	"conveyors": [],
+	"push_blocks": [],
+	"bonus_items": [{"kind": "ambrosia", "pos": [5, 6]}, {"kind": "gorgon_orb", "pos": [8, 10]}]
+}

@@ -1,0 +1,42 @@
+{
+	"world": 1,
+	"level": 11,
+	"name": "Garden K - Turning Stones",
+	"source_note": "Original proposal: rotators. Push a statue right along row 9: it turns north at (8,9), then east at (8,7), and sinks in the channel at (10,7).",
+	"time_limit": 140,
+	"player_start": [3, 10],
+	"grid": [
+		"~~~~~~~~~~~~~~~~",
+		"~~~~~~~~~~~~~~~~",
+		"~~~~~~~~~~~~~~~~",
+		"~~~~~~~~~~~~~~~~",
+		"~~........~~~~~~",
+		"~~........~....~",
+		"~~........~....~",
+		"~~........~....~",
+		"~~........~....~",
+		"~~........~....~",
+		"~~........~....~",
+		"~~........~~~~~~",
+		"~~~~~~~~~~~~~~~~",
+		"~~~~~~~~~~~~~~~~",
+		"~~~~~~~~~~~~~~~~"
+	],
+	"soul_urns": [[12, 6], [13, 8], [12, 10]],
+	"enemies": [],
+	"spawners": [
+		{"type": "noggle", "pos": [3, 5], "pattern": ["right", "left"], "interval": 5.0},
+		{"type": "noggle", "pos": [6, 10], "pattern": ["left", "right"], "interval": 5.0}
+	],
+	"springs": [],
+	"rotators": [
+		{"pos": [8, 9], "quarter_turns": -1},
+		{"pos": [8, 7], "quarter_turns": 1}
+	],
+	"warps": [],
+	"slippery_tiles": [],
+	"one_way_gates": [],
+	"conveyors": [],
+	"push_blocks": [],
+	"bonus_items": [{"kind": "ambrosia", "pos": [6, 6]}, {"kind": "gorgon_orb", "pos": [13, 6]}]
+}

@@ -1,0 +1,99 @@
+{
+	"bonus_items": [
+		{
+			"kind": "ambrosia",
+			"pos": [
+				5.0,
+				4.0
+			]
+		},
+		{
+			"kind": "ambrosia",
+			"pos": [
+				7.0,
+				4.0
+			]
+		},
+		{
+			"kind": "ambrosia",
+			"pos": [
+				9.0,
+				4.0
+			]
+		}
+	],
+	"conveyors": [],
+	"enemies": [],
+	"grid": [
+		"~~~~~~~~~~~~~~~~",
+		"~~~~~~~#~~~~~~~~",
+		"~~~~~.....~~~~~~",
+		"~~~~~~~~~~~~~~~~",
+		"~~~~~.~.~.~~~~~~",
+		"~~#~~~~~~~~~#~~~",
+		"~#~#~.....~#~#~~",
+		"#~~~.......~~~#~",
+		"#~~.........~~#~",
+		"~#...........#~~",
+		"~~#.........#~~~",
+		"~~~.........~~~~",
+		"~~~~.......~~~~~",
+		"~~~~~.....~~~~~~",
+		"~~~~~~~~~~~~~~~~"
+	],
+	"level": 2,
+	"name": "Garden Land B - Twin Reefs",
+	"one_way_gates": [],
+	"player_start": [
+		7.0,
+		12.0
+	],
+	"push_blocks": [],
+	"rotators": [],
+	"slippery_tiles": [],
+	"soul_urns": [
+		[
+			5.0,
+			2.0
+		],
+		[
+			7.0,
+			2.0
+		],
+		[
+			9.0,
+			2.0
+		]
+	],
+	"source_note": "Original level layout modified for this project. Inspired by the broad island and paired side branches in the user's screenshot; routes and object placements simplified.",
+	"spawners": [
+		{
+			"interval": 5.2,
+			"pattern": [
+				"right",
+				"left"
+			],
+			"pos": [
+				12.0,
+				9.0
+			],
+			"type": "noggle"
+		},
+		{
+			"interval": 5.2,
+			"pattern": [
+				"right",
+				"left"
+			],
+			"pos": [
+				2.0,
+				9.0
+			],
+			"type": "noggle"
+		}
+	],
+	"springs": [],
+	"time_limit": 105,
+	"warps": [],
+	"world": 1
+}

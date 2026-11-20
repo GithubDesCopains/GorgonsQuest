@@ -1,0 +1,87 @@
+{
+  "world": 1,
+  "level": 7,
+  "name": "Garden G",
+  "time_limit": 90,
+  "player_start": [
+    8,
+    13
+  ],
+  "grid": [
+    "################",
+    "#~~~~~~~~~~~~~~#",
+    "#~...~~~~~~...~#",
+    "#~...~~~~~....~#",
+    "#~............~#",
+    "#~............~#",
+    "#~............~#",
+    "#~............~#",
+    "#~............~#",
+    "#~............~#",
+    "#~~..........~~#",
+    "#~~..........~~#",
+    "#~~~........~~~#",
+    "#~~~~......~~~~#",
+    "################"
+  ],
+  "soul_urns": [
+    [
+      2,
+      8
+    ],
+    [
+      13,
+      8
+    ],
+    [
+      5,
+      10
+    ],
+    [
+      10,
+      10
+    ]
+  ],
+  "enemies": [
+    {
+      "type": "noggle",
+      "pos": [
+        2,
+        2
+      ],
+      "pattern": [
+        "right",
+        "right",
+        "left",
+        "left"
+      ]
+    },
+    {
+      "type": "birdie",
+      "pos": [
+        3,
+        2
+      ],
+      "pattern": [
+        "down",
+        "down",
+        "up",
+        "up"
+      ]
+    },
+    {
+      "type": "noggle",
+      "pos": [
+        4,
+        2
+      ],
+      "pattern": [
+        "right",
+        "down",
+        "left",
+        "up"
+      ]
+    }
+  ],
+  "source_note": "Provisional terrain transcription from supplied Garden Land reference image; verify tile/object coordinates against original game capture."
+}

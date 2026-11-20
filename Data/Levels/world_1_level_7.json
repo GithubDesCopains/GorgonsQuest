@@ -1,0 +1,42 @@
+{
+	"world": 1,
+	"level": 7,
+	"name": "Garden G - Spring Meadow",
+	"source_note": "Original proposal: springs. A statue pushed right along row 7 is bounced north by the spring at (11,7) into the channel.",
+	"time_limit": 130,
+	"player_start": [6, 10],
+	"grid": [
+		"~~~~~~~~~~~~~~~~",
+		"~~~~~~~~~....~~~",
+		"~~~~~~~~~....~~~",
+		"~~~~~~~~~....~~~",
+		"~~~~~~~~~....~~~",
+		"~~~~~~~~~~~~~~~~",
+		"~~~~........~~~~",
+		"~~~..........~~~",
+		"~~~..........~~~",
+		"~~~..........~~~",
+		"~~~..........~~~",
+		"~~~~........~~~~",
+		"~~~~~~~~~~~~~~~~",
+		"~~~~~~~~~~~~~~~~",
+		"~~~~~~~~~~~~~~~~"
+	],
+	"soul_urns": [[9, 2], [11, 2], [12, 4]],
+	"enemies": [],
+	"spawners": [
+		{"type": "noggle", "pos": [4, 8], "pattern": ["right", "left"], "interval": 5.0},
+		{"type": "noggle", "pos": [9, 9], "pattern": ["left", "right"], "interval": 5.0}
+	],
+	"springs": [
+		{"pos": [11, 7], "direction": "up"},
+		{"pos": [4, 9], "direction": "right"}
+	],
+	"rotators": [],
+	"warps": [],
+	"slippery_tiles": [],
+	"one_way_gates": [],
+	"conveyors": [],
+	"push_blocks": [],
+	"bonus_items": [{"kind": "ambrosia", "pos": [9, 6]}]
+}

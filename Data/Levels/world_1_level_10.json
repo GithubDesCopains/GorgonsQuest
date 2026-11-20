@@ -1,0 +1,45 @@
+{
+	"world": 1,
+	"level": 10,
+	"name": "Garden J - Vortex Isles",
+	"source_note": "Original proposal: warps. Pair A links the start isle to the north isle, pair B links the north isle to the east isle.",
+	"time_limit": 140,
+	"player_start": [2, 11],
+	"grid": [
+		"~~~~~~~~~~~~~~~~",
+		"~~~~~~~~~~~~~~~~",
+		"~~~~~......~~~~~",
+		"~~~~~......~~~~~",
+		"~~~~~......~~~~~",
+		"~~~~~......~~~~~",
+		"~~~~~~~~~~~~~~~~",
+		"~~~~~~~~~~~....~",
+		"~......~~~~....~",
+		"~......~~~~....~",
+		"~......~~~~....~",
+		"~......~~~~....~",
+		"~......~~~~....~",
+		"~~~~~~~~~~~~~~~~",
+		"~~~~~~~~~~~~~~~~"
+	],
+	"soul_urns": [[6, 3], [12, 8], [13, 11], [12, 12]],
+	"enemies": [],
+	"spawners": [
+		{"type": "noggle", "pos": [5, 9], "pattern": ["right", "left"], "interval": 6.0},
+		{"type": "noggle", "pos": [7, 4], "pattern": ["right", "left"], "interval": 6.0},
+		{"type": "noggle", "pos": [12, 10], "pattern": ["left", "right"], "interval": 6.0}
+	],
+	"springs": [],
+	"rotators": [],
+	"warps": [
+		{"pos": [3, 10], "pair_id": "A"},
+		{"pos": [7, 3], "pair_id": "A"},
+		{"pos": [9, 4], "pair_id": "B"},
+		{"pos": [13, 9], "pair_id": "B"}
+	],
+	"slippery_tiles": [],
+	"one_way_gates": [],
+	"conveyors": [],
+	"push_blocks": [],
+	"bonus_items": [{"kind": "ambrosia", "pos": [9, 2]}, {"kind": "gorgon_orb", "pos": [5, 11]}]
+}

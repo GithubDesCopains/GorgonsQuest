@@ -1,0 +1,121 @@
+{
+  "world": 1,
+  "level": 13,
+  "name": "Garden M",
+  "time_limit": 90,
+  "player_start": [
+    8,
+    13
+  ],
+  "grid": [
+    "################",
+    "#~~~~~~~~~~~~~~#",
+    "#~~~~......~~~~#",
+    "#~~~........~~~#",
+    "#~~~........~~~#",
+    "#~~..........~~#",
+    "#~............~#",
+    "#~............~#",
+    "#~............~#",
+    "#~............~#",
+    "#~~..........~~#",
+    "#~~~........~~~#",
+    "#~~~~......~~~~#",
+    "#~~~~~....~~~~~#",
+    "################"
+  ],
+  "soul_urns": [
+    [
+      5,
+      3
+    ],
+    [
+      10,
+      3
+    ],
+    [
+      4,
+      7
+    ],
+    [
+      11,
+      7
+    ],
+    [
+      7,
+      11
+    ],
+    [
+      8,
+      11
+    ]
+  ],
+  "enemies": [
+    {
+      "type": "noggle",
+      "pos": [
+        5,
+        2
+      ],
+      "pattern": [
+        "right",
+        "right",
+        "left",
+        "left"
+      ]
+    },
+    {
+      "type": "birdie",
+      "pos": [
+        6,
+        2
+      ],
+      "pattern": [
+        "down",
+        "down",
+        "up",
+        "up"
+      ]
+    },
+    {
+      "type": "noggle",
+      "pos": [
+        7,
+        2
+      ],
+      "pattern": [
+        "right",
+        "down",
+        "left",
+        "up"
+      ]
+    },
+    {
+      "type": "birdie",
+      "pos": [
+        8,
+        2
+      ],
+      "pattern": [
+        "right",
+        "right",
+        "left",
+        "left"
+      ]
+    },
+    {
+      "type": "noggle",
+      "pos": [
+        9,
+        2
+      ],
+      "pattern": [
+        "down",
+        "down",
+        "up",
+        "up"
+      ]
+    }
+  ],
+  "source_note": "Provisional terrain transcription from supplied Garden Land reference image; verify tile/object coordinates against original game capture."
+}

@@ -1,0 +1,48 @@
+{
+	"world": 1,
+	"level": 8,
+	"name": "Garden H - Conveyor Dock",
+	"source_note": "Original proposal: conveyor express lanes along rows 4 and 10. A lane only moves one way, so plan the route.",
+	"time_limit": 110,
+	"player_start": [7, 11],
+	"grid": [
+		"~~~~~~~~~~~~~~~~",
+		"~~~~~~~~~~~~~~~~",
+		"~~~~~~~~~~~~~~~~",
+		"~~............~~",
+		"~~............~~",
+		"~~............~~",
+		"~~....####....~~",
+		"~~....####....~~",
+		"~~....####....~~",
+		"~~............~~",
+		"~~............~~",
+		"~~............~~",
+		"~~~~~~~~~~~~~~~~",
+		"~~~~~~~~~~~~~~~~",
+		"~~~~~~~~~~~~~~~~"
+	],
+	"soul_urns": [[12, 4], [3, 10], [8, 5]],
+	"enemies": [],
+	"spawners": [
+		{"type": "noggle", "pos": [3, 7], "pattern": ["right", "left"], "interval": 5.0},
+		{"type": "noggle", "pos": [12, 7], "pattern": ["left", "right"], "interval": 5.0}
+	],
+	"springs": [],
+	"rotators": [],
+	"warps": [],
+	"slippery_tiles": [],
+	"one_way_gates": [],
+	"conveyors": [
+		{"pos": [4, 4], "direction": "right"}, {"pos": [5, 4], "direction": "right"},
+		{"pos": [6, 4], "direction": "right"}, {"pos": [7, 4], "direction": "right"},
+		{"pos": [8, 4], "direction": "right"}, {"pos": [9, 4], "direction": "right"},
+		{"pos": [10, 4], "direction": "right"}, {"pos": [11, 4], "direction": "right"},
+		{"pos": [4, 10], "direction": "left"}, {"pos": [5, 10], "direction": "left"},
+		{"pos": [6, 10], "direction": "left"}, {"pos": [7, 10], "direction": "left"},
+		{"pos": [8, 10], "direction": "left"}, {"pos": [9, 10], "direction": "left"},
+		{"pos": [10, 10], "direction": "left"}, {"pos": [11, 10], "direction": "left"}
+	],
+	"push_blocks": [],
+	"bonus_items": [{"kind": "ambrosia", "pos": [8, 9]}, {"kind": "gorgon_orb", "pos": [2, 3]}]
+}

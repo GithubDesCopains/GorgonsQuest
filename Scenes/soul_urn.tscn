@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://dxm8k3qp7jxas"]
+
+[ext_resource type="Script" path="res://Scenes/soul_urn.gd" id="1_urn"]
+
+[node name="SoulUrn" type="Node2D" groups=["collectibles"]]
+script = ExtResource("1_urn")

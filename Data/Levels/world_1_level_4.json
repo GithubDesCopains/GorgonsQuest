@@ -1,0 +1,39 @@
+{
+	"world": 1,
+	"level": 4,
+	"name": "Garden D - Narrow Channel",
+	"source_note": "Original proposal: first bridge. Push a statue north across the one-cell channel.",
+	"time_limit": 120,
+	"player_start": [8, 10],
+	"grid": [
+		"~~~~~~~~~~~~~~~~",
+		"~~~~~~~~~~~~~~~~",
+		"~~~~~......~~~~~",
+		"~~~~~......~~~~~",
+		"~~~~~......~~~~~",
+		"~~~~~~~~~~~~~~~~",
+		"~~~~........~~~~",
+		"~~~..........~~~",
+		"~~~..........~~~",
+		"~~~..........~~~",
+		"~~~~........~~~~",
+		"~~~~~......~~~~~",
+		"~~~~~~~~~~~~~~~~",
+		"~~~~~~~~~~~~~~~~",
+		"~~~~~~~~~~~~~~~~"
+	],
+	"soul_urns": [[6, 3], [8, 3], [10, 3]],
+	"enemies": [],
+	"spawners": [
+		{"type": "noggle", "pos": [4, 8], "pattern": ["right", "left"], "interval": 5.0},
+		{"type": "noggle", "pos": [11, 8], "pattern": ["left", "right"], "interval": 5.0}
+	],
+	"springs": [],
+	"rotators": [],
+	"warps": [],
+	"slippery_tiles": [],
+	"one_way_gates": [],
+	"conveyors": [],
+	"push_blocks": [],
+	"bonus_items": [{"kind": "ambrosia", "pos": [8, 2]}]
+}

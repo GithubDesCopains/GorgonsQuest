@@ -1,0 +1,176 @@
+{
+	"bonus_items": [
+		{
+			"kind": "gorgon_orb",
+			"pos": [
+				10.0,
+				13.0
+			]
+		},
+		{
+			"kind": "gorgon_orb",
+			"pos": [
+				6.0,
+				13.0
+			]
+		},
+		{
+			"kind": "ambrosia",
+			"pos": [
+				4.0,
+				5.0
+			]
+		},
+		{
+			"kind": "ambrosia",
+			"pos": [
+				5.0,
+				4.0
+			]
+		},
+		{
+			"kind": "ambrosia",
+			"pos": [
+				6.0,
+				3.0
+			]
+		},
+		{
+			"kind": "ambrosia",
+			"pos": [
+				6.0,
+				5.0
+			]
+		},
+		{
+			"kind": "ambrosia",
+			"pos": [
+				7.0,
+				4.0
+			]
+		},
+		{
+			"kind": "ambrosia",
+			"pos": [
+				8.0,
+				3.0
+			]
+		},
+		{
+			"kind": "ambrosia",
+			"pos": [
+				8.0,
+				5.0
+			]
+		},
+		{
+			"kind": "ambrosia",
+			"pos": [
+				9.0,
+				4.0
+			]
+		},
+		{
+			"kind": "ambrosia",
+			"pos": [
+				10.0,
+				3.0
+			]
+		},
+		{
+			"kind": "ambrosia",
+			"pos": [
+				10.0,
+				5.0
+			]
+		},
+		{
+			"kind": "ambrosia",
+			"pos": [
+				11.0,
+				4.0
+			]
+		},
+		{
+			"kind": "ambrosia",
+			"pos": [
+				12.0,
+				5.0
+			]
+		}
+	],
+	"conveyors": [],
+	"enemies": [],
+	"grid": [
+		"~~~~~~~~~~~~~~~~",
+		"~~~~~~~~.~~~~~~~",
+		"~~~~~~~.~.~~~~~~",
+		"~~~~~~.~.~.~~~~~",
+		"~~~~~.~.~.~.~~~~",
+		"~~~~.~.~.~.~.~~~",
+		"~~~~~~~~~~~~~~~~",
+		"~~~...........~~",
+		"~~~...........~~",
+		"~~~~.........~~~",
+		"~~~~~.......~~~~",
+		"~~~~~~~~.~~~~~~~",
+		"~~~~~~~~.~~~~~~~",
+		"~~~~~~.....~~~~~",
+		"~~~~~~~~~~~~~~~~"
+	],
+	"level": 3,
+	"name": "Garden Land C - Frozen Blossom",
+	"one_way_gates": [],
+	"player_start": [
+		8.0,
+		13.0
+	],
+	"push_blocks": [],
+	"rotators": [],
+	"slippery_tiles": [],
+	"soul_urns": [
+		[
+			7.0,
+			2.0
+		],
+		[
+			8.0,
+			1.0
+		],
+		[
+			9.0,
+			2.0
+		]
+	],
+	"source_note": "Original level layout modified for this project. Inspired by the stepped flower/pyramid island in the user's screenshot; block pattern and puzzle routes adjusted.",
+	"spawners": [
+		{
+			"interval": 5.2,
+			"pattern": [
+				"right",
+				"left"
+			],
+			"pos": [
+				13.0,
+				8.0
+			],
+			"type": "noggle"
+		},
+		{
+			"interval": 5.2,
+			"pattern": [
+				"right",
+				"left"
+			],
+			"pos": [
+				3.0,
+				8.0
+			],
+			"type": "noggle"
+		}
+	],
+	"springs": [],
+	"time_limit": 120,
+	"warps": [],
+	"world": 1
+}

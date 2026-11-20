@@ -1,0 +1,40 @@
+{
+	"world": 1,
+	"level": 13,
+	"name": "Garden M - Cracked Wall",
+	"source_note": "Original proposal: a line of water holes splits the island. Break the stone block at (7,6) to get across.",
+	"time_limit": 140,
+	"player_start": [3, 7],
+	"grid": [
+		"~~~~~~~~~~~~~~~~",
+		"~~~~~~~~~~~~~~~~",
+		"~~~~~~~~~~~~~~~~",
+		"~~.....o......~~",
+		"~~.....o......~~",
+		"~~.....o......~~",
+		"~~.....b......~~",
+		"~~.....o......~~",
+		"~~.....o......~~",
+		"~~.....o......~~",
+		"~~.....o......~~",
+		"~~~~~~~~~~~~~~~~",
+		"~~~~~~~~~~~~~~~~",
+		"~~~~~~~~~~~~~~~~",
+		"~~~~~~~~~~~~~~~~"
+	],
+	"soul_urns": [[11, 4], [12, 8], [10, 9]],
+	"enemies": [],
+	"spawners": [
+		{"type": "noggle", "pos": [4, 4], "pattern": ["right", "left"], "interval": 5.0},
+		{"type": "noggle", "pos": [5, 9], "pattern": ["left", "right"], "interval": 5.0},
+		{"type": "noggle", "pos": [11, 6], "pattern": ["left", "right"], "interval": 5.0}
+	],
+	"springs": [],
+	"rotators": [],
+	"warps": [],
+	"slippery_tiles": [],
+	"one_way_gates": [],
+	"conveyors": [],
+	"push_blocks": [],
+	"bonus_items": [{"kind": "ambrosia", "pos": [9, 5]}, {"kind": "gorgon_orb", "pos": [3, 3]}]
+}

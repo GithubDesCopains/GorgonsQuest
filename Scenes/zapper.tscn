@@ -1,0 +1,7 @@
+[gd_scene load_steps=2 format=3 uid="uid://d0apper123"]
+
+[ext_resource type="Script" path="res://Scenes/zapper.gd" id="1_zapper"]
+
+[node name="Zapper" type="CharacterBody2D"]
+script = ExtResource("1_zapper")
+groups = ["enemies"]

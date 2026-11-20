@@ -1,0 +1,113 @@
+{
+	"bonus_items": [
+		{
+			"kind": "ambrosia",
+			"pos": [
+				6,
+				5
+			]
+		},
+		{
+			"kind": "ambrosia",
+			"pos": [
+				7,
+				5
+			]
+		},
+		{
+			"kind": "ambrosia",
+			"pos": [
+				8,
+				5
+			]
+		},
+		{
+			"kind": "ambrosia",
+			"pos": [
+				7,
+				6
+			]
+		},
+		{
+			"kind": "gorgon_orb",
+			"pos": [
+				7,
+				13
+			]
+		}
+	],
+	"conveyors": [],
+	"enemies": [],
+	"grid": [
+		"~~~~~~~~~~~~~~~~",
+		"~~~..~~.~~..~~~~",
+		"~~~~~.~.~.~~~~~~",
+		"~~~~~~.~.~~~~~~~",
+		"~~~~~~~~~~~~~~~~",
+		"~~~.........~~~~",
+		"~~...........~~~",
+		"~~...........~~~",
+		"~~...........~~~",
+		"~~~.........~~~~",
+		"~~~~.......~~~~~",
+		"~~~~~.....~~~~~~",
+		"~~~~~~...~~~~~~~",
+		"~~~~~~~.~~~~~~~~",
+		"~~~~~~~~~~~~~~~~"
+	],
+	"level": 4,
+	"name": "Garden D",
+	"one_way_gates": [],
+	"player_start": [
+		7,
+		11
+	],
+	"push_blocks": [],
+	"rotators": [],
+	"slippery_tiles": [],
+	"soul_urns": [
+		[
+			3,
+			1
+		],
+		[
+			7,
+			1
+		],
+		[
+			11,
+			1
+		]
+	],
+	"source_note": "Provisional terrain transcription from supplied Garden Land reference image; verify tile/object coordinates against original game capture.",
+	"spawners": [
+		{
+			"interval": 5.2,
+			"pattern": [
+				"right",
+				"left"
+			],
+			"pos": [
+				12,
+				8
+			],
+			"type": "noggle"
+		},
+		{
+			"interval": 5.2,
+			"pattern": [
+				"right",
+				"left"
+			],
+			"pos": [
+				2,
+				8
+			],
+			"type": "noggle"
+		}
+	],
+	"springs": [],
+	"time_limit": 90,
+	"warps": [],
+	"world": 1
+}
