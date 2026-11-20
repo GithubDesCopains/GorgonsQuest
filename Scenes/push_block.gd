@@ -52,7 +52,7 @@ func _become_bridge() -> void:
 	grid_manager.set_tile(grid_pos, Constants.TileType.ICE)
 	if not is_inside_tree():
 		return
-	var main_scene := get_tree().root.get_node_or_null("Main")
+	var main_scene := SceneLookup.main_scene(self)
 	if main_scene and main_scene.has_method("add_bridge_visual"):
 		main_scene.add_bridge_visual(grid_pos)
 	var tween := create_tween()

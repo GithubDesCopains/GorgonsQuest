@@ -21,7 +21,7 @@ signal attack_resolved(kind: String, target: Vector2i, hit_player: bool)
 
 func _ready():
 	super._ready()
-	var main_scene = get_tree().root.get_node_or_null("Main")
+	var main_scene = SceneLookup.main_scene(self)
 	var gm = main_scene.get_node_or_null("GameManager") if main_scene else null
 	grid_manager = gm.get_node_or_null("GridManager") if gm else null
 
@@ -113,7 +113,7 @@ func animate_stomp() -> void:
 func animate_boulder_to(target: Vector2i) -> void:
 	if not is_inside_tree():
 		return
-	var main = get_tree().root.get_node_or_null("Main")
+	var main = SceneLookup.main_scene(self)
 	if not main:
 		return
 	var rock = ColorRect.new()
@@ -149,7 +149,7 @@ func get_boulder_impact_target(boss_pos: Vector2i, player_pos: Vector2i, player_
 
 func set_attack_telegraph(target: Vector2i, tint: Color) -> void:
 	clear_attack_telegraph()
-	var main = get_tree().root.get_node_or_null("Main") if is_inside_tree() else null
+	var main = SceneLookup.main_scene(self)
 	if not main:
 		return
 	attack_visual = ColorRect.new()

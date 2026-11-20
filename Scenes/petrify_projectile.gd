@@ -80,7 +80,7 @@ func check_hero_collision() -> bool:
 		return false
 	for hero in get_tree().get_nodes_in_group("player"):
 		if is_instance_valid(hero) and hero.is_alive and hits_hero(hero.position):
-			GameVFX.spawn(get_tree().root.get_node_or_null("Main"), hero.position, "impact")
+			GameVFX.spawn(SceneLookup.main_scene(self), hero.position, "impact")
 			var manager := get_tree().root.get_node_or_null("Main/GameManager")
 			if manager and manager.has_method("player_hit_by_enemy"):
 				manager.player_hit_by_enemy()  # petrified by his own reflected gaze
@@ -174,7 +174,7 @@ func check_boss_collision() -> bool:
 		return false
 	for boss in get_tree().get_nodes_in_group("bosses"):
 		if is_instance_valid(boss) and position.distance_to(boss.position) < 90.0:
-			GameVFX.spawn(get_tree().root.get_node_or_null("Main"), position, "impact")
+			GameVFX.spawn(SceneLookup.main_scene(self), position, "impact")
 			if boss.has_method("receive_gaze"):
 				boss.receive_gaze()
 			queue_free()
@@ -192,7 +192,7 @@ func check_enemy_collision():
 						enemy.show_immune_flash()
 					queue_free()
 					return
-				GameVFX.spawn(get_tree().root.get_node_or_null("Main"), enemy.global_position, "impact")
+				GameVFX.spawn(SceneLookup.main_scene(self), enemy.global_position, "impact")
 				if enemy.petrified and enemy.has_method("reset_petrification_timer"):
 					enemy.reset_petrification_timer()
 				else:
@@ -204,11 +204,11 @@ func hit_wall(grid_pos: Vector2i):
 	"""Called when hitting a wall"""
 	wall_hit.emit(grid_pos)
 	# Original golden impact sparks.
-	var root_parent := get_tree().root.get_node_or_null("Main") if is_inside_tree() else get_parent()
+	var root_parent := SceneLookup.effect_parent(self)
 	GameVFX.spawn(root_parent, position, "impact")
 	queue_free()
 
 func create_hit_effect():
 	"""Public compatibility hook for impact effects."""
-	var root_parent := get_tree().root.get_node_or_null("Main") if is_inside_tree() else get_parent()
+	var root_parent := SceneLookup.effect_parent(self)
 	return GameVFX.spawn(root_parent, position, "impact")

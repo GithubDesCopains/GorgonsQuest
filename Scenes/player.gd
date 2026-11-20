@@ -5,6 +5,15 @@ const CONTROLLER_FEEDBACK = preload("res://Scripts/controller_feedback.gd")
 const HERO_VISUAL_SCRIPT = preload("res://Scenes/hero_visual.gd")
 const GameVFX = preload("res://Scenes/game_vfx.gd")
 
+# Tiles a pushed statue may enter: it keeps sliding over them until something blocks it.
+const SLIDABLE_TILES := [
+	Constants.TileType.GROUND, Constants.TileType.ICE, Constants.TileType.SPRING, Constants.TileType.ROTATOR,
+	Constants.TileType.WARP, Constants.TileType.SLIPPERY, Constants.TileType.CONVEYOR, Constants.TileType.HOLE,
+	Constants.TileType.PLAYER_ONLY,
+]
+# Plain floor, with no special effect while sliding over it.
+const PLAIN_FLOOR_TILES := [Constants.TileType.GROUND, Constants.TileType.ICE, Constants.TileType.HOLE, Constants.TileType.PLAYER_ONLY]
+
 ## Player Controller - Hero with Gorgon's Eye
 ## Grid-based movement with smooth interpolation
 
@@ -227,7 +236,7 @@ func try_forced_slide_step() -> bool:
 		forced_move_direction = Vector2i.ZERO
 		return false
 	if grid_manager.get_tile(next_pos) == Constants.TileType.WARP:
-		var main_node = get_tree().root.get_node_or_null("Main") if is_inside_tree() else null
+		var main_node = SceneLookup.main_scene(self)
 		var gm = main_node.get_node_or_null("GameManager") if main_node else null
 		if not gm or gm.activate_warp(next_pos) == Vector2i(-1, -1):
 			forced_move_direction = Vector2i.ZERO
@@ -287,7 +296,7 @@ func try_push_statue(statue: Enemy, push_direction: Vector2i) -> bool:
 	var tile_type = grid_manager.get_tile(statue_next_pos)
 	
 	# Ground, ice and routing tiles: block slides until blocked.
-	if tile_type == Constants.TileType.GROUND or tile_type == Constants.TileType.ICE or tile_type == Constants.TileType.SPRING or tile_type == Constants.TileType.ROTATOR or tile_type == Constants.TileType.WARP or tile_type == Constants.TileType.SLIPPERY or tile_type == Constants.TileType.CONVEYOR or tile_type == Constants.TileType.HOLE or tile_type == Constants.TileType.PLAYER_ONLY:
+	if SLIDABLE_TILES.has(tile_type):
 		var final_pos = calculate_slide_path_on_ground(statue.current_grid_pos, push_direction)
 		if final_pos != statue.current_grid_pos:
 			# Check if final position is water
@@ -375,7 +384,7 @@ func _calculate_slide_path_raw(start_pos: Vector2i, direction: Vector2i) -> Vect
 			var conveyor_direction = grid_manager.get_conveyor_direction(next_pos)
 			if conveyor_direction == Vector2i.ZERO:
 				return current_pos
-			var main_node = get_tree().root.get_node_or_null("Main") if is_inside_tree() else null
+			var main_node = SceneLookup.main_scene(self)
 			var gm = main_node.get_node_or_null("GameManager") if main_node else null
 			var conveyor = gm.find_conveyor_at(next_pos) if gm else null
 			if conveyor:
@@ -392,7 +401,7 @@ func _calculate_slide_path_raw(start_pos: Vector2i, direction: Vector2i) -> Vect
 				return current_pos
 			if get_statue_at(warp_destination) != null:
 				return current_pos
-			var main_node = get_tree().root.get_node_or_null("Main") if is_inside_tree() else null
+			var main_node = SceneLookup.main_scene(self)
 			var gm = main_node.get_node_or_null("GameManager") if main_node else null
 			var warp = gm.find_warp_at(next_pos) if gm else null
 			if warp:
@@ -419,7 +428,7 @@ func _calculate_slide_path_raw(start_pos: Vector2i, direction: Vector2i) -> Vect
 			next_pos = current_pos + slide_direction
 			continue
 		
-		if tile_type == Constants.TileType.GROUND or tile_type == Constants.TileType.ICE or tile_type == Constants.TileType.HOLE or tile_type == Constants.TileType.PLAYER_ONLY:
+		if PLAIN_FLOOR_TILES.has(tile_type):
 			current_pos = next_pos
 			next_pos = current_pos + slide_direction
 		else:
@@ -434,7 +443,7 @@ func rotate_direction_90(direction: Vector2i, quarter_turns: int) -> Vector2i:
 	return Vector2i(direction.y, -direction.x)
 
 func get_rotator_or_spring_at(grid_pos: Vector2i, is_spring: bool) -> Node:
-	var main = get_tree().root.get_node_or_null("Main") if is_inside_tree() else null
+	var main = SceneLookup.main_scene(self)
 	var gm = main.get_node_or_null("GameManager") if main else null
 	if not gm:
 		return null
@@ -529,10 +538,14 @@ func rotate_facing_mirror() -> bool:
 		var mirror = game_manager.find_mirror_at(cell)
 		if mirror:
 			mirror.set_orientation(orientation)
-	if sound_manager and sound_manager.has_method("play_push"):
-		sound_manager.play_push()
+	_play_sound("play_push")
 	CONTROLLER_FEEDBACK.vibrate(0.08, 0.08, 0.2)
 	return true
+
+func _play_sound(method: StringName) -> void:
+	"""Play a SoundManager effect; skipped when no sound manager is attached (tests, stubs)."""
+	if sound_manager and sound_manager.has_method(method):
+		sound_manager.call(method)
 
 func reject_cell(cell: Vector2i) -> bool:
 	"""A statue just appeared on 'cell': the hero must not stay on it or walk into it.
@@ -579,15 +592,12 @@ func fire_petrify_shot():
 			if is_instance_valid(hero_visual):
 				hero_visual.set_action(false)
 		).set_delay(0.2)
-	var effect_parent: Node = get_tree().root.get_node_or_null("Main") if is_inside_tree() else get_parent()
+	var effect_parent: Node = SceneLookup.effect_parent(self)
 	var shot_direction: Vector2 = Constants.DIR_VECTORS[current_direction]
 	GameVFX.spawn(effect_parent, global_position + shot_direction * 42.0, "gaze", shot_direction)
 	CONTROLLER_FEEDBACK.vibrate(0.08, 0.08, 0.25)
 	print("⚡ Petrifying shot fired: ", Constants.Direction.keys()[current_direction])
-	
-	# Sound
-	if sound_manager and sound_manager.has_method("play_shoot"):
-		sound_manager.play_shoot()
+	_play_sound("play_shoot")
 
 func break_facing_statue() -> bool:
 	"""Break only the statue directly in front of a stationary hero."""
@@ -612,10 +622,7 @@ func create_stone_pillar():
 		if (tile == Constants.TileType.GROUND or tile == Constants.TileType.ICE) and not grid_manager.has_spawner(pillar_pos) and not grid_manager.has_mirror(pillar_pos) and not grid_manager.edge_blocked(current_grid_pos, pillar_pos):
 			pillar_created.emit(pillar_pos)
 			print("🗿 Stone pillar created at: ", pillar_pos)
-		
-		# Sound
-		if sound_manager and sound_manager.has_method("play_push"):
-			sound_manager.play_push()
+		_play_sound("play_push")
 
 func get_current_direction_vector() -> Vector2:
 	return Constants.DIR_VECTORS[current_direction]

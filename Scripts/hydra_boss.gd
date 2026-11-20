@@ -22,7 +22,7 @@ signal hydra_attack_resolved(kind: String, target: Vector2i, hit_player: bool)
 
 func _ready():
 	super._ready()
-	var main = get_tree().root.get_node_or_null("Main")
+	var main = SceneLookup.main_scene(self)
 	var gm = main.get_node_or_null("GameManager") if main else null
 	if gm:
 		grid_manager = gm.get_node_or_null("GridManager")
@@ -132,7 +132,7 @@ func resolve_attack(player_pos: Vector2i) -> bool:
 func animate_acid_projectile(target: Vector2i):
 	if not is_inside_tree() or not is_instance_valid(game_manager):
 		return
-	var main = get_tree().root.get_node_or_null("Main")
+	var main = SceneLookup.main_scene(self)
 	if not main:
 		return
 	var acid = ColorRect.new()
@@ -153,7 +153,7 @@ func set_telegraph_cells(cells: Array[Vector2i], tint: Color):
 	clear_telegraphs()
 	if not is_inside_tree():
 		return
-	var main = get_tree().root.get_node_or_null("Main")
+	var main = SceneLookup.main_scene(self)
 	if not main:
 		return
 	for cell in cells:

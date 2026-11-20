@@ -412,8 +412,7 @@ func spawn_boss(level_data: LevelData):
 	instance.position = grid_manager.grid_to_world(level_data.boss_position)
 	boss = instance
 	boss.boss_defeated.connect(_on_boss_defeated)
-	if is_instance_valid(sound_manager) and sound_manager.has_method("play_boss_music"):
-		sound_manager.play_boss_music()
+	_play_sound("play_boss_music")
 	return boss
 
 func _on_boss_defeated():
@@ -424,8 +423,7 @@ func _on_boss_defeated():
 		if main_scene and main_scene.has_method("refresh_tile_visual"):
 			main_scene.refresh_tile_visual(exit_pos, Constants.TileType.GROUND)
 	boss = null
-	if is_instance_valid(sound_manager) and sound_manager.has_method("end_boss_music"):
-		sound_manager.end_boss_music(current_world)
+	_play_sound("end_boss_music", [current_world])
 	print("Boss defeated! Arena exit unlocked.")
 
 func activate_warp(source_pos: Vector2i) -> Vector2i:
@@ -537,8 +535,7 @@ func destroy_pillar_at(grid_pos: Vector2i):
 	if is_instance_valid(grid_manager):
 		grid_manager.set_tile(grid_pos, Constants.TileType.GROUND)
 	
-	if sound_manager and sound_manager.has_method("play_shatter"):
-		sound_manager.play_shatter()
+	_play_sound("play_shatter")
 	
 	print("🗿 Stone pillar destroyed at: ", grid_pos)
 	pillar_destroyed.emit(grid_pos)
@@ -622,8 +619,7 @@ func update_switches() -> void:
 			for door in door_tiles:
 				if is_instance_valid(door) and door.door_id == id:
 					door.set_open(pressed_by_id[id])
-			if sound_manager and sound_manager.has_method("play_bridge"):
-				sound_manager.play_bridge()
+			_play_sound("play_bridge")
 
 func spawn_bonus_item(grid_pos: Vector2i, kind: String = "ambrosia") -> Node2D:
 	var item := Node2D.new()
@@ -654,8 +650,7 @@ func collect_bonus(kind: String) -> void:
 		add_score(300)
 	else:
 		add_score(bonus_item_script.AMBROSIA_POINTS)
-	if sound_manager and sound_manager.has_method("play_collect"):
-		sound_manager.play_collect()
+	_play_sound("play_collect")
 
 func petrify_all_enemies() -> int:
 	"""Turn every living, petrifiable enemy into stone. Returns how many were petrified."""
@@ -727,13 +722,17 @@ func spawn_enemy_spawner(grid_pos: Vector2i, type: String = "noggle", pattern: A
 	print("Enemy spawner created at: ", grid_pos, " type: ", type)
 	return spawner
 
+func _play_sound(method: StringName, args: Array = []) -> void:
+	"""Call a SoundManager method if one exists; silently skipped when there is no sound manager (tests, stubs)."""
+	if is_instance_valid(sound_manager) and sound_manager.has_method(method):
+		sound_manager.callv(method, args)
+
 func _on_enemy_petrified(enemy):
 	"""Handle enemy being petrified"""
 	print("Enemy turned to stone - can now be pushed!")
 	# Score: petrify enemy
 	add_score(100)
-	if sound_manager and sound_manager.has_method("play_petrify"):
-		sound_manager.play_petrify()
+	_play_sound("play_petrify")
 
 func on_enemy_squashed(enemy):
 	"""Handle enemy being squashed by a sliding block"""
@@ -755,9 +754,7 @@ func _on_soul_collected(urn):
 	if idx != -1:
 		soul_urns.remove_at(idx)
 	
-	# Sound
-	if sound_manager and sound_manager.has_method("play_collect"):
-		sound_manager.play_collect()
+	_play_sound("play_collect")
 	
 	# Update HUD
 	var hud = get_tree().get_first_node_in_group("hud")
@@ -823,9 +820,9 @@ func level_complete():
 	summary["is_new_record"] = summary["level_points"] > previous_best
 	if save_manager and save_manager.has_method("record_level_completion") and not _is_custom_level():
 		save_manager.record_level_completion(current_world, current_level, summary["level_points"])
-	if sound_manager and sound_manager.has_method("play_victory"):
-		# The last level of the last world gets the long campaign-winning fanfare.
-		sound_manager.play_victory(is_instance_valid(level_manager) and current_world >= level_manager.max_world and current_level >= level_manager.levels_per_world)
+	# The last level of the last world gets the long campaign-winning fanfare.
+	var is_final_level: bool = is_instance_valid(level_manager) and current_world >= level_manager.max_world and current_level >= level_manager.levels_per_world
+	_play_sound("play_victory", [is_final_level])
 	var victory_screen = victory_screen_scene.instantiate()
 	get_parent().add_child(victory_screen)
 	victory_screen.show_victory(summary)
@@ -867,9 +864,7 @@ func _on_player_died_animation_done():
 	print("💀 Lives remaining: ", current_lives)
 	lives_changed.emit(current_lives)
 	
-	# Sound
-	if sound_manager and sound_manager.has_method("play_death"):
-		sound_manager.play_death()
+	_play_sound("play_death")
 	
 	# Update HUD
 	if is_inside_tree():
@@ -884,9 +879,7 @@ func _on_player_died_animation_done():
 		print("☠️ GAME OVER ☠️")
 		game_over.emit()
 		
-		# Sound
-		if sound_manager and sound_manager.has_method("play_game_over"):
-			sound_manager.play_game_over()
+		_play_sound("play_game_over")
 		
 		show_game_over_screen()
 	else:
@@ -950,8 +943,7 @@ func _on_level_loaded(level_data: LevelData):
 	# Update world/level tracking and reset per-level score breakdown.
 	current_world = level_data.world_idx
 	current_level = level_data.level_idx
-	if is_instance_valid(sound_manager) and sound_manager.has_method("play_world_music"):
-		sound_manager.play_world_music(current_world)
+	_play_sound("play_world_music", [current_world])
 	level_score_start = score
 	enemies_squashed_this_level = 0
 	level_completion_started = false
@@ -1006,81 +998,24 @@ func clear_level():
 		boss.queue_free()
 	boss = null
 	boss_arena_rect = Rect2i()
-	# Clear pillars
-	for pillar in pillars:
-		if is_instance_valid(pillar):
-			pillar.queue_free()
-	pillars.clear()
-	
-	# Clear soul urns
-	for urn in soul_urns:
-		if is_instance_valid(urn):
-			urn.queue_free()
-	soul_urns.clear()
-	
-	# Clear enemies
-	for enemy in enemies:
-		if is_instance_valid(enemy):
-			enemy.queue_free()
-	enemies.clear()
-	
-	# Clear springs and metadata
-	for spring in spring_tiles:
-		if is_instance_valid(spring):
-			spring.queue_free()
-	spring_tiles.clear()
-	for rotator in rotator_tiles:
-		if is_instance_valid(rotator):
-			rotator.queue_free()
-	rotator_tiles.clear()
-	for warp in warp_tiles:
-		if is_instance_valid(warp):
-			warp.queue_free()
-	warp_tiles.clear()
-	for slippery in slippery_tiles:
-		if is_instance_valid(slippery):
-			slippery.queue_free()
-	slippery_tiles.clear()
-	for gate in one_way_tiles:
-		if is_instance_valid(gate):
-			gate.queue_free()
-	one_way_tiles.clear()
-	for conveyor in conveyor_tiles:
-		if is_instance_valid(conveyor):
-			conveyor.queue_free()
-	conveyor_tiles.clear()
+	# Every spawned level object lives in one of these lists; free the nodes, then empty the list.
+	for node_list in [pillars, soul_urns, enemies, spring_tiles, rotator_tiles, warp_tiles, slippery_tiles,
+			one_way_tiles, conveyor_tiles, push_blocks, bonus_items, mirror_tiles, switch_tiles, door_tiles, spawners]:
+		for node in node_list:
+			if is_instance_valid(node):
+				node.queue_free()
+		node_list.clear()
+	# The grid keeps its own per-cell metadata for the same objects.
 	if is_instance_valid(grid_manager):
 		grid_manager.clear_one_way_directions()
 		grid_manager.clear_conveyor_directions()
 		grid_manager.spring_directions.clear()
 		grid_manager.rotator_turns.clear()
 		grid_manager.clear_warp_pairs()
-	
-	# Clear push blocks and bonus items
-	for block in push_blocks:
-		if is_instance_valid(block):
-			block.queue_free()
-	push_blocks.clear()
-	for item in bonus_items:
-		if is_instance_valid(item):
-			item.queue_free()
-	bonus_items.clear()
-	for node_list in [mirror_tiles, switch_tiles, door_tiles]:
-		for node in node_list:
-			if is_instance_valid(node):
-				node.queue_free()
-		node_list.clear()
-	if is_instance_valid(grid_manager):
 		grid_manager.clear_push_blocks()
 		grid_manager.clear_spawners()
 		grid_manager.clear_mirrors()
 		grid_manager.clear_doors_and_switches()
-
-	# Clear spawners
-	for spawner in spawners:
-		if is_instance_valid(spawner):
-			spawner.queue_free()
-	spawners.clear()
 	
 	# Reset counters
 	souls_collected = 0

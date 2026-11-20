@@ -20,7 +20,7 @@ signal chimera_attack_resolved(kind: String, target: Vector2i, hit_player: bool)
 
 func _ready():
 	super._ready()
-	var main = get_tree().root.get_node_or_null("Main")
+	var main = SceneLookup.main_scene(self)
 	game_manager = main.get_node_or_null("GameManager") if main else null
 	if is_instance_valid(game_manager):
 		arena_rect = game_manager.boss_arena_rect
@@ -158,7 +158,7 @@ func show_telegraph(cells: Array[Vector2i], tint: Color):
 	clear_telegraphs()
 	if not is_inside_tree():
 		return
-	var main = get_tree().root.get_node_or_null("Main")
+	var main = SceneLookup.main_scene(self)
 	if not main:
 		return
 	for cell in cells:

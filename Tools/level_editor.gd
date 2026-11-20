@@ -123,7 +123,7 @@ const LEVEL_CHECKER = preload("res://Scripts/level_checker.gd")
 const TEST_LEVEL_PATH := "user://editor_test_level.json"
 const MAX_UNDO := 100
 const TILE_CODES := {".": "Sol", "#": "Mur", "~": "Eau", "i": "Glace", "b": "Pilier cassable", "o": "Trou d'eau", "v": "Case violette (héros seul)"}
-const ENEMY_TYPES := ["noggle", "birdie", "zapper", "pusher", "wall_hugger", "jumper", "hades_shadow", "flame_beast"]
+const ENEMY_TYPES := LEVEL_CHECKER.ENEMY_TYPES   # one list shared with the level checker
 const BOSS_TYPES := ["cyclops", "hydra", "chimera", "medusa", "generic"]
 const TOOLS := [
 	"Terrain", "Départ joueur", "Urne", "Ennemi", "Générateur", "Ressort",
@@ -705,13 +705,9 @@ func _load_file(path: String) -> void:
 	if not result.get("ok", false):
 		_show_notice("Impossible de charger ce niveau :\n%s" % result.get("error", "Erreur inconnue"))
 		return
-	var file := FileAccess.open(path, FileAccess.READ)
-	if file == null:
+	var parsed := _read_document(path)  # the loader already validated the file, so this only needs the raw document
+	if parsed.is_empty():
 		_show_notice("Impossible d’ouvrir le fichier :\n%s" % FileAccess.get_open_error())
-		return
-	var parsed: Variant = JSON.parse_string(file.get_as_text())
-	if typeof(parsed) != TYPE_DICTIONARY:
-		_show_notice("Le fichier JSON n’est pas un objet valide.")
 		return
 	document = parsed
 	current_path = path

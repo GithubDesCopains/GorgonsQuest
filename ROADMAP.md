@@ -312,3 +312,17 @@ Les tâches sont ordonnées par priorité et dépendance technique afin d'être 
   - Validation : 73/73 tests; démarrage du jeu et de l'éditeur sans erreur de script.
   - Reste à faire : aucun des 15 niveaux du Monde 1 n'utilise ces éléments; les placer avec l'éditeur.
 
+---
+
+## 🛡️ Durcissement & refactorisation
+
+- [x] **Données non fiables** : `LevelJsonLoader.validate_value_types()` rejette les types erronés (intervalle, motif, durée, identifiants, boss) et borne durée (3600 s), intervalle de génération (0,5 s min), vie du boss (99), nom (100 car.) et taille de fichier (256 Ko). `SaveManager` ramène les valeurs non numériques aux défauts et plafonne les scores. Test : `test_untrusted_level_and_save_data_never_crash`.
+- [x] **Licence** : le pack Craftpix (`Assets/Pix/`) n'est plus versionné (sources non redistribuables); il reste en local, hors du jeu.
+- [x] **Refactorisation** (sans changement de comportement) :
+  - `Scripts/scene_lookup.gd` (`SceneLookup.main_scene`, `effect_parent`) remplace 25 recherches répétées du nœud `Main`; renvoie `null` hors de l'arbre au lieu de planter.
+  - `_play_sound()` remplace 17 blocs `if sound_manager and has_method(...)` (`GameManager`, `Player`, `Enemy`).
+  - `GameManager.clear_level()` : une boucle sur 15 listes remplace 15 boucles copiées (-65 lignes).
+  - `Player.SLIDABLE_TILES` / `PLAIN_FLOOR_TILES` remplacent deux conditions de 9 et 4 `or`.
+  - Éditeur : liste d'ennemis partagée avec le vérificateur, et lecture de fichier non dupliquée.
+  - Validation : 74/74 tests, 4 runners d'intégration, démarrage du jeu et de l'éditeur sans erreur.
+

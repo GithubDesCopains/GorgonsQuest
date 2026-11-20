@@ -20,7 +20,7 @@ func _ready():
 	z_index = Constants.LAYER_GROUND + 1
 	
 	# Managers
-	var main = get_tree().root.get_node_or_null("Main")
+	var main = SceneLookup.main_scene(self)
 	if main:
 		game_manager = main.get_node_or_null("GameManager")
 		if game_manager:

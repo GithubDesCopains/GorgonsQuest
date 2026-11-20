@@ -59,7 +59,7 @@ func _ready():
 	await get_tree().process_frame
 	
 	# Get grid manager AND game manager safely
-	var main_node = get_tree().root.get_node_or_null("Main")
+	var main_node = SceneLookup.main_scene(self)
 	if main_node:
 		var game_mgr = main_node.get_node_or_null("GameManager")
 		if game_mgr:
@@ -371,8 +371,13 @@ func un_petrify() -> void:
 		if petrification_visual.has_method("set_warning_visible"):
 			petrification_visual.set_warning_visible(false)
 
+func _play_sound(method: StringName) -> void:
+	"""Play a SoundManager effect; skipped when no sound manager is attached (tests, stubs)."""
+	if sound_manager and sound_manager.has_method(method):
+		sound_manager.call(method)
+
 func _spawn_game_vfx(effect_kind: String) -> void:
-	var vfx_parent: Node = get_tree().root.get_node_or_null("Main") if is_inside_tree() else get_parent()
+	var vfx_parent: Node = SceneLookup.effect_parent(self)
 	GAME_VFX.spawn(vfx_parent, global_position, effect_kind)
 
 func check_boss_collision_during_slide() -> bool:
@@ -419,9 +424,7 @@ func squash():
 	print("💥 Enemy squashed at ", current_grid_pos, "! +200 pts")
 	enemy_squashed.emit(self)
 	
-	# Play sound
-	if sound_manager and sound_manager.has_method("play_squash"):
-		sound_manager.play_squash()
+	_play_sound("play_squash")
 	
 	# Notify GameManager
 	if is_instance_valid(game_manager) and game_manager.has_method("on_enemy_squashed"):
@@ -448,9 +451,7 @@ func shatter():
 	print("💥 Stone statue shattered at ", current_grid_pos, "!")
 	enemy_shattered.emit(self)
 	
-	# Play shatter sound
-	if sound_manager and sound_manager.has_method("play_shatter"):
-		sound_manager.play_shatter()
+	_play_sound("play_shatter")
 	
 	# Notify GameManager
 	if is_instance_valid(game_manager) and game_manager.has_method("on_enemy_shattered"):
@@ -571,9 +572,7 @@ func slide_on_ground_into_water(water_pos: Vector2i, direction: Vector2i):
 	grid_manager.set_tile(water_pos, Constants.TileType.ICE)
 	update_water_tile_visual(water_pos)
 	
-	# Sound - bridge created
-	if sound_manager and sound_manager.has_method("play_bridge"):
-		sound_manager.play_bridge()
+	_play_sound("play_bridge")
 	
 	print("💦 Ice block entered water - sinking and creating bridge!")
 	
@@ -629,7 +628,7 @@ func slide_into_water(final_pos: Vector2i, direction: Vector2i):
 
 func update_water_tile_visual(water_pos: Vector2i):
 	"""Update the water tile to show it's now a bridge"""
-	var main_scene = get_tree().root.get_node_or_null("Main")
+	var main_scene = SceneLookup.main_scene(self)
 	if main_scene and main_scene.has_method("add_bridge_visual"):
 		main_scene.add_bridge_visual(water_pos)
 
