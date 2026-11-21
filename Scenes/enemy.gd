@@ -505,8 +505,9 @@ func push_to_position(new_grid_pos: Vector2i):
 	
 	print("📦 Statue pushed to: ", new_grid_pos)
 
-func slide_on_ground(final_pos: Vector2i, direction: Vector2i):
-	"""Slide statue across GROUND until reaching obstacle (original Kickle mechanic)"""
+func slide_on_ground(final_pos: Vector2i, direction: Vector2i, waypoints: Array = []):
+	"""Slide statue across GROUND until reaching obstacle (original Kickle mechanic).
+	waypoints: stops on the way (hammer strikes), see SlideMotion."""
 	if not petrified or is_squashed:
 		return
 	
@@ -514,7 +515,6 @@ func slide_on_ground(final_pos: Vector2i, direction: Vector2i):
 	print("🧊 Ice block sliding on GROUND from ", current_grid_pos, " to ", final_pos)
 	
 	# Create sliding animation
-	var start_world = grid_manager.grid_to_world(current_grid_pos)
 	var final_world = grid_manager.grid_to_world(final_pos)
 	
 	# Calculate distance for animation timing
@@ -522,8 +522,12 @@ func slide_on_ground(final_pos: Vector2i, direction: Vector2i):
 	var slide_duration = max(0.08, 0.12 * distance)  # 0.12 sec per tile (fast slide)
 	
 	# Animate sliding
-	var tween = create_tween()
-	tween.tween_property(self, "position", final_world, slide_duration).set_ease(Tween.EASE_OUT)
+	var tween: Tween
+	if waypoints.is_empty():
+		tween = create_tween()
+		tween.tween_property(self, "position", final_world, slide_duration).set_ease(Tween.EASE_OUT)
+	else:
+		tween = SlideMotion.through(self, grid_manager, current_grid_pos, waypoints, final_pos)
 	
 	# Wait for animation
 	await tween.finished
@@ -539,8 +543,8 @@ func slide_on_ground(final_pos: Vector2i, direction: Vector2i):
 	
 	print("📦 Ice block stopped on ground at: ", final_pos)
 
-func slide_on_ground_into_water(water_pos: Vector2i, direction: Vector2i):
-	"""Slide on ground then enter water at the end"""
+func slide_on_ground_into_water(water_pos: Vector2i, direction: Vector2i, waypoints: Array = []):
+	"""Slide on ground then enter water at the end. waypoints: stops on the way (hammer strikes), see SlideMotion."""
 	if not petrified or is_squashed:
 		return
 	
@@ -548,7 +552,6 @@ func slide_on_ground_into_water(water_pos: Vector2i, direction: Vector2i):
 	print("🧊 Ice block sliding from ", current_grid_pos, " into water at ", water_pos)
 	
 	# Create sliding animation to water
-	var start_world = grid_manager.grid_to_world(current_grid_pos)
 	var water_world = grid_manager.grid_to_world(water_pos)
 	
 	# Calculate distance for animation timing
@@ -556,8 +559,12 @@ func slide_on_ground_into_water(water_pos: Vector2i, direction: Vector2i):
 	var slide_duration = max(0.08, 0.12 * distance)  # Same speed as ground sliding
 	
 	# Animate sliding to water
-	var slide_tween = create_tween()
-	slide_tween.tween_property(self, "position", water_world, slide_duration).set_ease(Tween.EASE_OUT)
+	var slide_tween: Tween
+	if waypoints.is_empty():
+		slide_tween = create_tween()
+		slide_tween.tween_property(self, "position", water_world, slide_duration).set_ease(Tween.EASE_OUT)
+	else:
+		slide_tween = SlideMotion.through(self, grid_manager, current_grid_pos, waypoints, water_pos)
 	
 	# Wait for slide animation
 	await slide_tween.finished

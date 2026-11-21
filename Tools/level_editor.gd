@@ -68,6 +68,9 @@ class GridView extends Control:
 		for plate in document.get("switches", []):
 			if _position_matches(plate.get("pos", []), pos):
 				markers.append("Z" + str(plate.get("id", "")))
+		for hammer in document.get("hammers", []):
+			if _position_matches(hammer.get("pos", []), pos):
+				markers.append("H" + {"right": "→", "down": "↓", "left": "←", "up": "↑"}.get(str(hammer.get("direction", "up")).to_lower(), ""))
 		var boss: Dictionary = document.get("boss", {})
 		if not boss.is_empty() and _position_matches(boss.get("pos", []), pos):
 			markers.append("B")
@@ -130,7 +133,7 @@ const TOOLS := [
 	"Rotateur", "Téléporteur", "Sol glissant", "Porte unidirectionnelle",
 	"Tapis roulant", "Boss", "Effacer",
 	"Bloc poussable", "Bonus glace (points)", "Bonus boule P",
-	"Miroir", "Interrupteur", "Porte"
+	"Miroir", "Interrupteur", "Porte", "Marteau"
 ]
 
 var document: Dictionary = {}
@@ -459,7 +462,8 @@ func _new_document() -> void:
 		"bonus_items": [],
 		"mirrors": [],
 		"switches": [],
-		"doors": []
+		"doors": [],
+		"hammers": []
 	}
 	for y in range(Constants.GRID_ROWS):
 		var row := ""
@@ -543,6 +547,8 @@ func _on_cell_selected(pos: Vector2i) -> void:
 			_add_entity("switches", {"pos": [pos.x, pos.y], "id": _link_id()})
 		18:
 			_place_door(pos)
+		19:
+			_place_hammer(pos)
 	dirty = true
 	grid_view.queue_redraw()
 
@@ -597,6 +603,14 @@ func _place_door(pos: Vector2i) -> void:
 		return
 	_add_entity("doors", {"pos": [pos.x, pos.y], "direction": direction, "id": _link_id()})
 
+func _place_hammer(pos: Vector2i) -> void:
+	"""The clicked cell is the pivot; the head points in the chosen direction. Click again to turn the head a quarter
+	turn clockwise. A pivot on the outer ring of the grid is refused: the head must be able to sweep a 3x3 area."""
+	if pos.x < 1 or pos.x > Constants.GRID_COLS - 2 or pos.y < 1 or pos.y > Constants.GRID_ROWS - 2:
+		_show_notice("Le pivot d’un marteau doit être à une case au moins du bord de la grille.")
+		return
+	_place_or_rotate("hammers", pos)
+
 func _add_entity(key: String, entry: Dictionary) -> void:
 	_remove_position_entries(key, Vector2i(entry["pos"][0], entry["pos"][1]))
 	document[key].append(entry)
@@ -613,7 +627,7 @@ func _remove_position_entries(key: String, pos: Vector2i) -> void:
 func _erase_at(pos: Vector2i) -> void:
 	var row: String = document["grid"][pos.y]
 	document["grid"][pos.y] = row.substr(0, pos.x) + "." + row.substr(pos.x + 1)
-	for key in ["soul_urns", "enemies", "spawners", "springs", "rotators", "warps", "slippery_tiles", "one_way_gates", "conveyors", "push_blocks", "bonus_items", "mirrors", "switches", "doors"]:
+	for key in ["soul_urns", "enemies", "spawners", "springs", "rotators", "warps", "slippery_tiles", "one_way_gates", "conveyors", "push_blocks", "bonus_items", "mirrors", "switches", "doors", "hammers"]:
 		_remove_position_entries(key, pos)
 	var boss: Dictionary = document.get("boss", {})
 	if not boss.is_empty() and _position_matches(boss.get("pos", []), pos):

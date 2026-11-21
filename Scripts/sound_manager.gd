@@ -74,6 +74,10 @@ func play_death():
 	var stream = generate_tone(400, 100, 0.5, "sawtooth")
 	play_stream(stream)
 
+func play_hammer():
+	"""Hammer head finishing its swing: heavy stone knock (TASK-10.2)"""
+	_play_sfx("hammer")
+
 func play_victory(final: bool = false):
 	"""Level-clear fanfare; the longer one when the campaign is won (TASK-9.2)"""
 	_play_sfx("final_fanfare" if final else "level_fanfare")
@@ -185,7 +189,7 @@ func _shape(phase: float, waveform: String) -> float:
 
 # --- TASK-9.2 / 9.3: layered procedural SFX, jingles and boss theme (16-bit, mixed from float buffers) ---
 
-const SFX_NAMES := ["gaze", "crush", "marble", "splash", "level_fanfare", "final_fanfare", "game_over", "boss_theme"]
+const SFX_NAMES := ["gaze", "crush", "marble", "splash", "hammer", "level_fanfare", "final_fanfare", "game_over", "boss_theme"]
 # Phrygian-flavoured riff, in semitones above the root (-1 = rest); eighth notes, played twice.
 const BOSS_RIFF := [0, -1, 0, 1, 0, -1, 7, 6, 0, -1, 0, 1, 3, -1, 1, 0]
 const BOSS_BPM := 148.0
@@ -226,6 +230,11 @@ func generate_sfx(sfx_name: String) -> AudioStreamWAV:
 			_add_noise(buf, rng, 0.0, 0.1, 0.35, 0.7, 3.0)             # spray
 			for bubble in [0.12, 0.2, 0.28, 0.36]:
 				_add_tone(buf, bubble, 0.07, 380.0 + bubble * 900.0, 900.0 + bubble * 1200.0, "sine", 0.22, 3.0)
+		"hammer":
+			buf = _new_buffer(0.38)
+			_add_tone(buf, 0.0, 0.16, 190.0, 70.0, "sine", 0.85, 2.2)    # wooden knock
+			_add_tone(buf, 0.0, 0.1, 880.0, 520.0, "triangle", 0.2, 3.5)  # stone ring
+			_add_noise(buf, rng, 0.0, 0.2, 0.4, 0.3, 3.0)                  # impact grit
 		"level_fanfare":
 			buf = _new_buffer(1.5)
 			_add_notes(buf, [[523.25, 0.0, 0.14], [659.25, 0.14, 0.14], [783.99, 0.28, 0.14], [1046.5, 0.42, 0.3]], "square", 0.2)

@@ -120,8 +120,8 @@ func _process(delta):
 			hit_wall(current_grid)
 		return
 	var tile_type = grid_manager.get_tile(current_grid)
-	if tile_type == Constants.TileType.WALL or tile_type == Constants.TileType.STONE_BLOCK:
-		hit_wall(current_grid)
+	if tile_type == Constants.TileType.WALL or tile_type == Constants.TileType.STONE_BLOCK or grid_manager.has_hammer(current_grid):
+		hit_wall(current_grid)  # a hammer (pivot or head) stops the gaze like a wall
 		return
 	
 	# Check collision with bosses and regular enemies.

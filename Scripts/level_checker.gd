@@ -74,6 +74,8 @@ static func check(doc: Dictionary) -> Array[String]:
 				warnings.append("%s %s est sur une case infranchissable." % [SPECIAL_LABELS[key], _label(special_pos)])
 			_occupy(occupied, special_pos, String(SPECIAL_LABELS[key]).to_lower())
 
+	_check_hammers(doc, grid, occupied, warnings)
+
 	for cell in occupied:
 		if occupied[cell].size() > 1:
 			warnings.append("Plusieurs éléments se superposent %s : %s." % [_label(cell), ", ".join(PackedStringArray(occupied[cell]))])
@@ -111,6 +113,30 @@ static func check(doc: Dictionary) -> Array[String]:
 	if int(doc.get("time_limit", 90)) < 10:
 		warnings.append("Le temps limite est très court (moins de 10 secondes).")
 	return warnings
+
+static func _check_hammers(doc: Dictionary, grid: Array, occupied: Dictionary, warnings: Array[String]) -> void:
+	"""A hammer occupies its pivot and its head, and its head sweeps the whole 3x3 area around the pivot."""
+	var dirs := {"right": Vector2i.RIGHT, "down": Vector2i.DOWN, "left": Vector2i.LEFT, "up": Vector2i.UP}
+	var pivots: Array[Vector2i] = []
+	for entry in doc.get("hammers", []):
+		if typeof(entry) != TYPE_DICTIONARY:
+			continue
+		var pivot := _to_pos(entry)
+		var head: Vector2i = pivot + dirs.get(str(entry.get("direction", "up")).to_lower(), Vector2i.UP)
+		if _is_blocking(grid, pivot):
+			warnings.append("Le pivot du marteau %s est sur une case infranchissable." % _label(pivot))
+		_occupy(occupied, pivot, "le pivot du marteau")
+		_occupy(occupied, head, "la tête du marteau")
+		pivots.append(pivot)
+		for dx in range(-1, 2):
+			for dy in range(-1, 2):
+				var cell := pivot + Vector2i(dx, dy)
+				if (dx != 0 or dy != 0) and _tile_at(grid, cell) in ["#", "b"]:
+					warnings.append("Le marteau %s est gêné par un mur en %s : sa tête ne pourra pas tourner." % [_label(pivot), _label(cell)])
+	for index in range(pivots.size()):
+		for other in range(index + 1, pivots.size()):
+			if absi(pivots[index].x - pivots[other].x) <= 2 and absi(pivots[index].y - pivots[other].y) <= 2:
+				warnings.append("Les marteaux %s et %s se chevauchent." % [_label(pivots[index]), _label(pivots[other])])
 
 static func _to_pos(value: Variant) -> Vector2i:
 	if typeof(value) == TYPE_DICTIONARY:

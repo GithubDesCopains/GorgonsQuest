@@ -23,8 +23,9 @@ func release_cell() -> void:
 	if grid_manager:
 		grid_manager.clear_push_block(grid_pos)
 
-func slide_to(final_pos: Vector2i) -> void:
-	"""Slide to final_pos. If that cell is water the block sinks there and becomes a bridge."""
+func slide_to(final_pos: Vector2i, waypoints: Array = []) -> void:
+	"""Slide to final_pos. If that cell is water the block sinks there and becomes a bridge.
+	waypoints: stops on the way (hammer strikes), see SlideMotion."""
 	release_cell()
 	var start := grid_pos
 	var into_water := grid_manager.get_tile(final_pos) == Constants.TileType.WATER
@@ -37,9 +38,13 @@ func slide_to(final_pos: Vector2i) -> void:
 		if into_water:
 			_become_bridge()
 		return
-	var distance := Vector2(start).distance_to(Vector2(final_pos))
-	var tween := create_tween()
-	tween.tween_property(self, "position", target, SLIDE_SECONDS_PER_TILE * maxf(distance, 1.0)).set_ease(Tween.EASE_OUT)
+	var tween: Tween
+	if waypoints.is_empty():
+		var distance := Vector2(start).distance_to(Vector2(final_pos))
+		tween = create_tween()
+		tween.tween_property(self, "position", target, SLIDE_SECONDS_PER_TILE * maxf(distance, 1.0)).set_ease(Tween.EASE_OUT)
+	else:
+		tween = SlideMotion.through(self, grid_manager, start, waypoints, final_pos)
 	if into_water:
 		await tween.finished
 		_become_bridge()

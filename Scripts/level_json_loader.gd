@@ -54,7 +54,7 @@ func validate_document(doc: Dictionary) -> String:
 	var position_error = validate_position(doc["player_start"], "player_start")
 	if not position_error.is_empty():
 		return position_error
-	for key in ["soul_urns", "enemies", "spawners", "springs", "rotators", "warps", "slippery_tiles", "one_way_gates", "conveyors", "bonus_items", "push_blocks", "mirrors", "switches", "doors"]:
+	for key in ["soul_urns", "enemies", "spawners", "springs", "rotators", "warps", "slippery_tiles", "one_way_gates", "conveyors", "bonus_items", "push_blocks", "mirrors", "switches", "doors", "hammers"]:
 		if doc.has(key) and typeof(doc[key]) != TYPE_ARRAY:
 			return "%s must be an array" % key
 	var type_error := validate_value_types(doc)
@@ -141,6 +141,18 @@ func validate_mechanics(doc: Dictionary) -> String:
 			return "a door must sit between two cells of the grid"
 		if str(entry.get("id", "")).is_empty():
 			return "door id cannot be empty"
+	for entry in doc.get("hammers", []):
+		if typeof(entry) != TYPE_DICTIONARY:
+			return "hammers entries must be objects"
+		var err = validate_position(entry.get("pos"), "hammers.pos")
+		if not err.is_empty():
+			return err
+		if not DIRECTIONS.has(str(entry.get("direction", "")).to_lower()):
+			return "hammers direction must be up, down, left, or right"
+		# The head sweeps the 3x3 area around the pivot, so the pivot cannot sit on the outer ring of the grid.
+		var pivot = vector_from_array(entry["pos"])
+		if pivot.x < 1 or pivot.x > Constants.GRID_COLS - 2 or pivot.y < 1 or pivot.y > Constants.GRID_ROWS - 2:
+			return "a hammer pivot must be at least one cell away from the grid border"
 	return ""
 
 func validate_entity_positions(doc: Dictionary) -> String:
@@ -246,6 +258,8 @@ func document_to_level(doc: Dictionary) -> LevelData:
 		data.switches.append({"pos": vector_from_array(entry["pos"]), "id": str(entry["id"])})
 	for entry in doc.get("doors", []):
 		data.doors.append({"pos": vector_from_array(entry["pos"]), "direction": direction_from_name(str(entry["direction"])), "id": str(entry["id"])})
+	for entry in doc.get("hammers", []):
+		data.hammers.append({"pos": vector_from_array(entry["pos"]), "direction": direction_from_name(str(entry["direction"]))})
 	if typeof(doc.get("boss", null)) == TYPE_DICTIONARY:
 		var boss_data: Dictionary = doc["boss"]
 		data.is_boss_level = true

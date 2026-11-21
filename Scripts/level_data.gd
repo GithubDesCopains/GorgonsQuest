@@ -22,6 +22,7 @@ var push_blocks: Array  # Array of Vector2i positions of dark-blue pushable bloc
 var mirrors: Array  # Array of Dictionary [{pos, orientation}] orientation: slash | backslash
 var switches: Array  # Array of Dictionary [{pos, id}] pressure plates, held down by a pushable block
 var doors: Array  # Array of Dictionary [{pos, direction, id}] barrier on the edge between pos and pos+direction
+var hammers: Array  # Array of Dictionary [{pos, direction}] pivot cell and the direction its head points to
 var is_boss_level: bool
 var boss_type: String
 var boss_name: String
@@ -51,6 +52,7 @@ func _init(w: int = 1, l: int = 1):
 	mirrors = []
 	switches = []
 	doors = []
+	hammers = []
 	is_boss_level = false
 	boss_type = "generic"
 	boss_name = ""

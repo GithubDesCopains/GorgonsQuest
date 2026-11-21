@@ -312,6 +312,18 @@ Les tâches sont ordonnées par priorité et dépendance technique afin d'être 
   - Validation : 73/73 tests; démarrage du jeu et de l'éditeur sans erreur de script.
   - Reste à faire : aucun des 15 niveaux du Monde 1 n'utilise ces éléments; les placer avec l'éditeur.
 
+- [x] **TASK-10.2 : Marteau (Hammer)**
+  - Un marteau = un **pivot** et une **tête** sur l'une des 4 cases voisines (`hammers` en JSON : `pos` du pivot, `direction` de la tête). Pivot et tête sont solides comme un mur; la tête balaie le carré 3x3 autour du pivot. Pivot interdit sur le bord de la grille.
+  - **Choc latéral** : un bloc ou une statue qui arrive contre un CÔTÉ de la tête s'arrête, la tête fait 3/4 de tour et l'envoie dans la direction où elle pointait. Bloc venu de la gauche : 3/4 de tour horaire; venu de la droite : 3/4 antihoraire. La tête finit du côté d'où venait le bloc et y reste (le marteau garde son état).
+  - **Héros** : debout sur le côté de la tête, il la pousse d'un quart de tour (une poussée par appui de touche).
+  - **Autre contact** (bout de la tête, pivot, tête en plein balayage) : le bloc s'arrête comme contre un mur.
+  - Le marteau **refuse de tourner** (bloc arrêté comme contre un mur) si un mur, un générateur, un miroir, un bloc, un autre marteau, le héros ou une statue gêne le balayage, ou si le bloc n'a nulle part où partir.
+  - Règles dans `GridManager` (`hammer_deflection`, `hammer_hit`, `can_hammer_turn`, `turn_hammer`) : la tête tourne instantanément; les cases balayées restent solides jusqu'à la fin de l'animation (`Scenes/hammer_tile.gd`, `Scripts/slide_motion.gd` fait attendre le bloc frappé). Un filet de sécurité termine le balayage si le bloc disparaît en route.
+  - Ennemis, oiseaux, nageurs, regard pétrifiant et création de pilier traitent le marteau comme un mur. Plusieurs coups successifs sur une trajectoire sont limités à 8.
+  - Éditeur : outil « Marteau » (clic = placer, re-clic = tourner la tête d'un quart de tour horaire), marqueur `H`. Vérificateur : mur dans le 3x3, pivot sur case infranchissable, marteaux qui se chevauchent. Son d'impact `play_hammer`.
+  - Tests : règles de déviation pour les 16 combinaisons, bloc venu des deux côtés, bout et pivot, refus (mur, pas de place, balayage gêné, héros), poussée du héros, solidité pendant le balayage, format JSON, éditeur et vérificateur. Validation : 80/80 tests; démarrage du jeu et de l'éditeur sans erreur.
+  - Reste à faire : écouter le son et ajuster la durée du balayage (0,45 s); aucun niveau n'utilise encore le marteau.
+
 ---
 
 ## 🛡️ Durcissement & refactorisation

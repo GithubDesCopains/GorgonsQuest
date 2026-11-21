@@ -122,6 +122,114 @@ func clear_doors_and_switches() -> void:
 	door_edges.clear()
 	switch_cells.clear()
 
+# --- Hammers --------------------------------------------------------------------------------
+# A hammer is a pivot cell plus a head on one of its four neighbours; both are solid like a wall.
+# A block or statue reaching the SIDE of the head stops against it, the hammer swings three quarters of a
+# turn and strikes it away in the direction the head pointed. Any other contact (top of the head, pivot)
+# simply stops the slider, as a wall would.
+var hammer_dirs: Dictionary = {}   # pivot cell -> head direction (Vector2i)
+
+static func rotate_cw(direction: Vector2i) -> Vector2i:
+	return Vector2i(-direction.y, direction.x)
+
+static func rotate_ccw(direction: Vector2i) -> Vector2i:
+	return Vector2i(direction.y, -direction.x)
+
+static func hammer_deflection(head_dir: Vector2i, slide_dir: Vector2i) -> Dictionary:
+	"""What a slider travelling in slide_dir does to a hammer whose head points to head_dir.
+	Empty unless it reaches the side of the head. Otherwise: 'launch' is the direction it is struck in (where the head
+	pointed), 'new_head' where the head ends up (on the side the slider came from) and 'quarter_turns' the swing
+	(+3 clockwise, -3 counter-clockwise, the head always goes the long way round)."""
+	if head_dir == Vector2i.ZERO or slide_dir == Vector2i.ZERO or head_dir.x * slide_dir.x + head_dir.y * slide_dir.y != 0:
+		return {}
+	var new_head := -slide_dir
+	return {"launch": head_dir, "new_head": new_head, "quarter_turns": 3 if rotate_ccw(head_dir) == new_head else -3}
+
+func set_hammer(pivot: Vector2i, head_dir: Vector2i) -> bool:
+	if not [Vector2i.UP, Vector2i.DOWN, Vector2i.LEFT, Vector2i.RIGHT].has(head_dir):
+		return false
+	# The head sweeps the whole 3x3 area around the pivot, so the pivot cannot touch the border.
+	if pivot.x < 1 or pivot.x > Constants.GRID_COLS - 2 or pivot.y < 1 or pivot.y > Constants.GRID_ROWS - 2:
+		return false
+	hammer_dirs[pivot] = head_dir
+	return true
+
+func get_hammer_dir(pivot: Vector2i) -> Vector2i:
+	return hammer_dirs.get(pivot, Vector2i.ZERO)
+
+func has_hammer(cell: Vector2i) -> bool:
+	"""True on a pivot, on the cell holding a head, and on both cells of a head that is mid-swing."""
+	if hammer_dirs.is_empty():
+		return false
+	for key in hammer_dirs:
+		var pivot: Vector2i = key
+		if cell == pivot or cell == pivot + hammer_dirs[key]:
+			return true
+	for key in hammer_swing_cells:
+		if hammer_swing_cells[key].has(cell):
+			return true
+	return false
+
+var hammer_swing_cells: Dictionary = {}   # pivot -> [old head cell, new head cell] while the head is swinging
+
+func turn_hammer(pivot: Vector2i, new_head: Vector2i) -> bool:
+	"""Point the head to new_head at once (the rules never wait for the animation). Until finish_hammer_swing(), both the
+	old and the new head cell stay solid so nothing walks into the sweeping head. False if there is no such hammer."""
+	if not hammer_dirs.has(pivot) or not [Vector2i.UP, Vector2i.DOWN, Vector2i.LEFT, Vector2i.RIGHT].has(new_head):
+		return false
+	hammer_swing_cells[pivot] = [pivot + hammer_dirs[pivot], pivot + new_head]
+	hammer_dirs[pivot] = new_head
+	return true
+
+func hammer_pivot_for_head(cell: Vector2i) -> Vector2i:
+	"""Pivot of the hammer whose head sits on 'cell' right now; (-1,-1) when no head is there (pivots do not count)."""
+	for key in hammer_dirs:
+		var pivot: Vector2i = key
+		if cell == pivot + hammer_dirs[key]:
+			return pivot
+	return Vector2i(-1, -1)
+
+func hammer_sweep_cells(pivot: Vector2i, head_dir: Vector2i, quarter_turns: int) -> Array[Vector2i]:
+	"""Cells the head passes through (start excluded) when it turns quarter_turns (+ clockwise, - counter-clockwise)."""
+	var cells: Array[Vector2i] = []
+	var dir := head_dir
+	for i in range(absi(quarter_turns)):
+		dir = rotate_cw(dir) if quarter_turns > 0 else rotate_ccw(dir)
+		cells.append(pivot + dir)
+	return cells
+
+func can_hammer_turn(pivot: Vector2i, quarter_turns: int) -> bool:
+	"""A head cannot swing through a wall, a spawner, a mirror or another hammer, and not while it is already swinging."""
+	if not hammer_dirs.has(pivot) or hammer_swing_cells.has(pivot):
+		return false
+	for cell in hammer_sweep_cells(pivot, hammer_dirs[pivot], quarter_turns):
+		if not is_valid_grid_pos(cell) or spawner_cells.has(cell) or mirror_cells.has(cell) or push_block_cells.has(cell) or has_hammer(cell):
+			return false
+		var tile := get_tile(cell)
+		if tile == Constants.TileType.WALL or tile == Constants.TileType.STONE_BLOCK or tile == Constants.TileType.EMPTY:
+			return false
+	return true
+
+func finish_hammer_swing(pivot: Vector2i) -> void:
+	hammer_swing_cells.erase(pivot)
+
+func is_hammer_swinging(pivot: Vector2i) -> bool:
+	return hammer_swing_cells.has(pivot)
+
+func hammer_hit(cell: Vector2i, slide_dir: Vector2i) -> Dictionary:
+	"""{'pivot', 'stop'} when a slider entering 'cell' in slide_dir hits the side of a hammer head ('stop' is the cell it
+	rests on, beside the head); empty for anything else, which then behaves like a wall."""
+	for key in hammer_dirs:
+		var pivot: Vector2i = key
+		var head_dir: Vector2i = hammer_dirs[key]
+		if cell == pivot + head_dir and not hammer_deflection(head_dir, slide_dir).is_empty():
+			return {"pivot": pivot, "stop": cell - slide_dir}
+	return {}
+
+func clear_hammers() -> void:
+	hammer_dirs.clear()
+	hammer_swing_cells.clear()
+
 func set_push_block(grid_pos: Vector2i) -> void:
 	push_block_cells[grid_pos] = true
 
@@ -224,6 +332,7 @@ func initialize_grid():
 	clear_spawners()
 	clear_mirrors()
 	clear_doors_and_switches()
+	clear_hammers()
 	for y in range(Constants.GRID_ROWS):
 		var row = []
 		for x in range(Constants.GRID_COLS):
@@ -257,7 +366,7 @@ func is_walkable(grid_pos: Vector2i) -> bool:
 	if not is_valid_grid_pos(grid_pos):
 		return false
 	
-	if push_block_cells.has(grid_pos) or spawner_cells.has(grid_pos) or mirror_cells.has(grid_pos):
+	if push_block_cells.has(grid_pos) or spawner_cells.has(grid_pos) or mirror_cells.has(grid_pos) or has_hammer(grid_pos):
 		return false
 
 	var tile = grid_data[grid_pos.y][grid_pos.x]

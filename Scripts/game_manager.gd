@@ -78,6 +78,8 @@ var bonus_item_script = preload("res://Scenes/bonus_item.gd")
 var mirror_script = preload("res://Scenes/mirror_tile.gd")
 var switch_script = preload("res://Scenes/switch_tile.gd")
 var door_script = preload("res://Scenes/door_tile.gd")
+var hammer_script = preload("res://Scenes/hammer_tile.gd")
+var hammer_tiles: Array = []
 var mirror_tiles: Array = []
 var switch_tiles: Array = []
 var door_tiles: Array = []
@@ -593,6 +595,22 @@ func spawn_door(grid_pos: Vector2i, direction: Vector2i, id: String) -> Node2D:
 	door_tiles.append(door)
 	return door
 
+func spawn_hammer(pivot: Vector2i, head_dir: Vector2i) -> Node2D:
+	if not is_instance_valid(grid_manager) or not grid_manager.set_hammer(pivot, head_dir):
+		return null
+	var hammer := Node2D.new()
+	hammer.set_script(hammer_script)
+	get_parent().add_child(hammer)
+	hammer.initialize(pivot, head_dir, grid_manager, self)
+	hammer_tiles.append(hammer)
+	return hammer
+
+func find_hammer_at(pivot: Vector2i) -> Node2D:
+	for hammer in hammer_tiles:
+		if is_instance_valid(hammer) and hammer.grid_pos == pivot:
+			return hammer
+	return null
+
 func is_switch_pressed(grid_pos: Vector2i) -> bool:
 	"""A switch is held down by a pushable block or by a petrified enemy resting on it."""
 	if grid_manager.has_push_block(grid_pos):
@@ -991,6 +1009,8 @@ func _on_level_loaded(level_data: LevelData):
 		spawn_switch(switch_data.get("pos", Vector2i.ZERO), switch_data.get("id", ""))
 	for door_data in level_data.doors:
 		spawn_door(door_data.get("pos", Vector2i.ZERO), door_data.get("direction", Vector2i.RIGHT), door_data.get("id", ""))
+	for hammer_data in level_data.hammers:
+		spawn_hammer(hammer_data.get("pos", Vector2i.ZERO), hammer_data.get("direction", Vector2i.UP))
 
 func clear_level():
 	"""Clear all level objects"""
@@ -1000,7 +1020,7 @@ func clear_level():
 	boss_arena_rect = Rect2i()
 	# Every spawned level object lives in one of these lists; free the nodes, then empty the list.
 	for node_list in [pillars, soul_urns, enemies, spring_tiles, rotator_tiles, warp_tiles, slippery_tiles,
-			one_way_tiles, conveyor_tiles, push_blocks, bonus_items, mirror_tiles, switch_tiles, door_tiles, spawners]:
+			one_way_tiles, conveyor_tiles, push_blocks, bonus_items, mirror_tiles, switch_tiles, door_tiles, hammer_tiles, spawners]:
 		for node in node_list:
 			if is_instance_valid(node):
 				node.queue_free()
@@ -1016,6 +1036,7 @@ func clear_level():
 		grid_manager.clear_spawners()
 		grid_manager.clear_mirrors()
 		grid_manager.clear_doors_and_switches()
+		grid_manager.clear_hammers()
 	
 	# Reset counters
 	souls_collected = 0

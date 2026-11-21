@@ -40,6 +40,9 @@ var sound_manager: Node
 var hero_visual: Node2D
 var last_slide_direction: Vector2i = Vector2i.ZERO
 var last_slide_path: Array[Vector2i] = []
+var last_slide_strikes: Array = []   # hammer strikes met on the last computed slide: {pivot, cell, quarter_turns, launch}
+var hammer_push_armed := true        # re-armed when the direction key is released, so a held key turns a hammer only once
+const MAX_STRIKES_PER_SLIDE := 8     # a ring of hammers could otherwise bounce one block forever
 var forced_move_direction: Vector2i = Vector2i.ZERO
 
 const TURN_DELAY := 0.07  # a tap shorter than this only turns the hero; holding the key walks
@@ -124,6 +127,8 @@ func pressed_direction() -> Vector2i:
 func track_direction_hold(delta: float) -> void:
 	"""Measure how long the current direction key has been held (also called while the hero is mid-step)."""
 	var pressed := pressed_direction()
+	if pressed == Vector2i.ZERO:
+		hammer_push_armed = true
 	if pressed != held_direction:
 		held_direction = pressed
 		held_time = 0.0
@@ -197,6 +202,13 @@ func try_move(direction: Vector2i) -> bool:
 			return true
 		return false
 
+	# A hammer head: standing beside it, the hero turns it a quarter turn away from himself. One push per key press.
+	if grid_manager.has_hammer(next_pos):
+		if hammer_push_armed and try_push_hammer(next_pos, direction):
+			hammer_push_armed = false
+			return true
+		return false
+
 	# Check if there's a petrified enemy (statue) at next position
 	var statue_at_next = get_statue_at(next_pos)
 	if statue_at_next:
@@ -264,7 +276,7 @@ func try_push_block(block_pos: Vector2i, push_direction: Vector2i) -> bool:
 	var final_pos := calculate_slide_path_on_ground(block_pos, push_direction)
 	if final_pos == block_pos:
 		return false
-	block.slide_to(final_pos)
+	block.slide_to(final_pos, hammer_waypoints(block_pos))
 	CONTROLLER_FEEDBACK.vibrate(0.14, 0.18, 0.55)
 	return true
 
@@ -303,10 +315,10 @@ func try_push_statue(statue: Enemy, push_direction: Vector2i) -> bool:
 			var final_tile = grid_manager.get_tile(final_pos)
 			if final_tile == Constants.TileType.WATER:
 				# Block slid into water
-				statue.slide_on_ground_into_water(final_pos, push_direction)
+				statue.slide_on_ground_into_water(final_pos, push_direction, hammer_waypoints(statue.current_grid_pos))
 			else:
 				# Block slid on ground only
-				statue.slide_on_ground(final_pos, push_direction)
+				statue.slide_on_ground(final_pos, push_direction, hammer_waypoints(statue.current_grid_pos))
 			statue_pushed.emit(statue, push_direction)
 			CONTROLLER_FEEDBACK.vibrate(0.14, 0.18, 0.55)
 			return true
@@ -325,9 +337,86 @@ func try_push_statue(statue: Enemy, push_direction: Vector2i) -> bool:
 	
 	return false
 
+func _hammer_strike(slider_cell: Vector2i, head_cell: Vector2i, slide_dir: Vector2i) -> Dictionary:
+	"""Strike data when a slider resting on slider_cell hits the side of the hammer head on head_cell, else {}.
+	The hammer refuses (acts like a wall) if its swing or the struck block's first step is blocked."""
+	var hit := grid_manager.hammer_hit(head_cell, slide_dir)
+	if hit.is_empty():
+		return {}
+	var pivot: Vector2i = hit["pivot"]
+	var deflection := GridManager.hammer_deflection(grid_manager.get_hammer_dir(pivot), slide_dir)
+	if deflection.is_empty() or not grid_manager.can_hammer_turn(pivot, deflection["quarter_turns"]):
+		return {}
+	for swept in grid_manager.hammer_sweep_cells(pivot, grid_manager.get_hammer_dir(pivot), deflection["quarter_turns"]):
+		if swept == current_grid_pos or get_statue_at(swept) != null:
+			return {}  # the head must not sweep through the hero or a statue
+	var first_step: Vector2i = slider_cell + (deflection["launch"] as Vector2i)
+	if not _can_slider_enter(slider_cell, first_step):
+		return {}  # nowhere to go: the block would stay put, so the hammer does not swing
+	return {"pivot": pivot, "new_head": deflection["new_head"], "quarter_turns": deflection["quarter_turns"], "launch": deflection["launch"]}
+
+func _can_slider_enter(from: Vector2i, to: Vector2i) -> bool:
+	if not grid_manager.is_valid_grid_pos(to) or grid_manager.edge_blocked(from, to):
+		return false
+	var tile := grid_manager.get_tile(to)
+	if tile == Constants.TileType.WALL or tile == Constants.TileType.STONE_BLOCK or tile == Constants.TileType.EMPTY:
+		return false
+	return not (grid_manager.has_spawner(to) or grid_manager.has_mirror(to) or grid_manager.has_hammer(to) or grid_manager.has_push_block(to) or get_statue_at(to) != null)
+
+func try_push_hammer(head_cell: Vector2i, push_direction: Vector2i) -> bool:
+	"""The hero stands beside a hammer head and pushes it one quarter turn, away from himself."""
+	var pivot := grid_manager.hammer_pivot_for_head(head_cell)
+	if pivot == Vector2i(-1, -1):
+		return false
+	var head_dir := grid_manager.get_hammer_dir(pivot)
+	if head_dir.x * push_direction.x + head_dir.y * push_direction.y != 0:
+		return false  # only the side of the head can be pushed
+	var quarter_turns := 1 if GridManager.rotate_cw(head_dir) == push_direction else -1
+	if not grid_manager.can_hammer_turn(pivot, quarter_turns):
+		return false
+	for swept in grid_manager.hammer_sweep_cells(pivot, head_dir, quarter_turns):
+		if swept == current_grid_pos or get_statue_at(swept) != null:
+			return false
+	grid_manager.turn_hammer(pivot, push_direction)
+	var hammer = _find_hammer_node(pivot)
+	if hammer:
+		hammer.swing(quarter_turns)
+	else:
+		grid_manager.finish_hammer_swing(pivot)
+	_play_sound("play_hammer")
+	CONTROLLER_FEEDBACK.vibrate(0.1, 0.14, 0.4)
+	return true
+
+func _find_hammer_node(pivot: Vector2i) -> Node:
+	var main = SceneLookup.main_scene(self)
+	var gm = main.get_node_or_null("GameManager") if main else null
+	return gm.find_hammer_at(pivot) if gm and gm.has_method("find_hammer_at") else null
+
+func hammer_waypoints(start_cell: Vector2i) -> Array:
+	"""Stops for a slide animation: one per hammer strike, each waiting for the head's swing."""
+	var waypoints: Array = []
+	for strike in last_slide_strikes:
+		var hammer = _find_hammer_node(strike["pivot"])
+		var pivot: Vector2i = strike["pivot"]
+		var quarter_turns: int = strike["quarter_turns"]
+		var on_arrive := Callable()
+		if hammer:
+			on_arrive = func(): hammer.swing(quarter_turns)
+		else:
+			on_arrive = func(): grid_manager.finish_hammer_swing(pivot)
+		waypoints.append({"cell": strike["cell"], "pause": 0.45, "on_arrive": on_arrive})
+	return waypoints
+
 func calculate_slide_path_on_ground(start_pos: Vector2i, direction: Vector2i) -> Vector2i:
 	"""Slide destination for statues and push blocks. Holes are crossed but never a resting cell."""
+	var hammers_before: Dictionary = grid_manager.hammer_dirs.duplicate()
+	var swings_before: Dictionary = grid_manager.hammer_swing_cells.duplicate(true)
 	var final_pos := _calculate_slide_path_raw(start_pos, direction)
+	if final_pos == start_pos and not last_slide_strikes.is_empty():
+		# Nothing actually moved, so the hammers it touched must not have swung.
+		grid_manager.hammer_dirs = hammers_before
+		grid_manager.hammer_swing_cells = swings_before
+		last_slide_strikes.clear()
 	var guard := 0
 	while grid_manager.get_tile(final_pos) == Constants.TileType.HOLE and final_pos != start_pos and guard < Constants.GRID_COLS + Constants.GRID_ROWS:
 		final_pos -= last_slide_direction
@@ -338,6 +427,7 @@ func _calculate_slide_path_raw(start_pos: Vector2i, direction: Vector2i) -> Vect
 	"""Calculate statue slide destination, including springs, rotators, and warps."""
 	last_slide_direction = direction
 	last_slide_path.clear()
+	last_slide_strikes.clear()
 	var current_pos = start_pos
 	var slide_direction = direction
 	var visited_rotators: Dictionary = {}
@@ -357,6 +447,17 @@ func _calculate_slide_path_raw(start_pos: Vector2i, direction: Vector2i) -> Vect
 			return current_pos
 		if grid_manager.has_mirror(next_pos) or grid_manager.edge_blocked(current_pos, next_pos):
 			return current_pos  # mirrors and closed doors stop a sliding block or statue like a wall
+		if grid_manager.has_hammer(next_pos):
+			# Only the SIDE of a hammer head gets a strike; the tip, the pivot or a head mid-swing stop it like a wall.
+			var strike := _hammer_strike(current_pos, next_pos, slide_direction)
+			if strike.is_empty() or last_slide_strikes.size() >= MAX_STRIKES_PER_SLIDE:
+				return current_pos
+			grid_manager.turn_hammer(strike["pivot"], strike["new_head"])
+			last_slide_strikes.append({"pivot": strike["pivot"], "cell": current_pos, "quarter_turns": strike["quarter_turns"], "launch": strike["launch"]})
+			slide_direction = strike["launch"]
+			last_slide_direction = slide_direction
+			next_pos = current_pos + slide_direction
+			continue
 		if get_statue_at(next_pos) != null or grid_manager.has_push_block(next_pos):
 			return current_pos
 		
@@ -619,7 +720,7 @@ func create_stone_pillar():
 	
 	if grid_manager.is_valid_grid_pos(pillar_pos):
 		var tile = grid_manager.get_tile(pillar_pos)
-		if (tile == Constants.TileType.GROUND or tile == Constants.TileType.ICE) and not grid_manager.has_spawner(pillar_pos) and not grid_manager.has_mirror(pillar_pos) and not grid_manager.edge_blocked(current_grid_pos, pillar_pos):
+		if (tile == Constants.TileType.GROUND or tile == Constants.TileType.ICE) and not grid_manager.has_spawner(pillar_pos) and not grid_manager.has_mirror(pillar_pos) and not grid_manager.has_hammer(pillar_pos) and not grid_manager.edge_blocked(current_grid_pos, pillar_pos):
 			pillar_created.emit(pillar_pos)
 			print("🗿 Stone pillar created at: ", pillar_pos)
 		_play_sound("play_push")

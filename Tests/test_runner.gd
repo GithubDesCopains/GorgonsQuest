@@ -21,6 +21,11 @@ func _init():
 	run_test("test_task_9_2_9_3_event_music_and_sfx", test_task_9_2_9_3_event_music_and_sfx)
 	run_test("test_untrusted_level_and_save_data_never_crash", test_untrusted_level_and_save_data_never_crash)
 	run_test("test_boss_body_parts_sit_on_the_body", test_boss_body_parts_sit_on_the_body)
+	run_test("test_hammer_deflection_rules", test_hammer_deflection_rules)
+	run_test("test_hammer_strikes_sliding_block", test_hammer_strikes_sliding_block)
+	run_test("test_hammer_mirror_image_and_walls", test_hammer_mirror_image_and_walls)
+	run_test("test_hero_pushes_hammer_and_hammer_is_solid", test_hero_pushes_hammer_and_hammer_is_solid)
+	run_test("test_hammer_level_format_editor_and_checker", test_hammer_level_format_editor_and_checker)
 	run_test("test_slide_path_calculation", test_slide_path_calculation)
 	run_test("test_task_1_1_enemy_squash", test_task_1_1_enemy_squash)
 	run_test("test_task_1_2_shatter_statue", test_task_1_2_shatter_statue)
@@ -313,6 +318,183 @@ func test_boss_body_parts_sit_on_the_body() -> String:
 		failure = "Boss eye must lie inside the body rectangle"
 	boss.free()
 	return failure
+
+func _hammer_world() -> Array:
+	"""Open ground (x 2..11, y 2..9) with a hammer pivot at (6,5), head UP at (6,4), and a player."""
+	var gm := GridManager.new()
+	gm.initialize_grid()
+	for y in range(2, 10):
+		for x in range(2, 12):
+			gm.set_tile(Vector2i(x, y), Constants.TileType.GROUND)
+	gm.set_hammer(Vector2i(6, 5), Vector2i.UP)
+	var player = load("res://Scenes/player.gd").new()
+	player.grid_manager = gm
+	player.current_grid_pos = Vector2i(0, 0)
+	return [gm, player]
+
+func test_hammer_deflection_rules() -> String:
+	var from_left := GridManager.hammer_deflection(Vector2i.UP, Vector2i.RIGHT)   # block travels right, hits the left side
+	if from_left.is_empty() or from_left["launch"] != Vector2i.UP or from_left["new_head"] != Vector2i.LEFT or from_left["quarter_turns"] != 3:
+		return "A block from the left must turn the head 3/4 clockwise to LEFT and launch UP, got %s" % str(from_left)
+	var from_right := GridManager.hammer_deflection(Vector2i.UP, Vector2i.LEFT)
+	if from_right.is_empty() or from_right["launch"] != Vector2i.UP or from_right["new_head"] != Vector2i.RIGHT or from_right["quarter_turns"] != -3:
+		return "A block from the right must turn the head 3/4 counter-clockwise to RIGHT and launch UP, got %s" % str(from_right)
+	if not GridManager.hammer_deflection(Vector2i.UP, Vector2i.DOWN).is_empty() or not GridManager.hammer_deflection(Vector2i.UP, Vector2i.UP).is_empty():
+		return "A block hitting the tip of the head (or sliding along it) must not deflect"
+	for head_dir in [Vector2i.UP, Vector2i.RIGHT, Vector2i.DOWN, Vector2i.LEFT]:
+		for slide in [Vector2i.UP, Vector2i.RIGHT, Vector2i.DOWN, Vector2i.LEFT]:
+			var result := GridManager.hammer_deflection(head_dir, slide)
+			var side_hit: bool = head_dir.x * slide.x + head_dir.y * slide.y == 0
+			if result.is_empty() == side_hit:
+				return "Deflection must exist exactly for side hits (head %s, slide %s)" % [str(head_dir), str(slide)]
+			if side_hit and (result["launch"] != head_dir or result["new_head"] != -slide or absi(result["quarter_turns"]) != 3):
+				return "Wrong deflection for head %s, slide %s: %s" % [str(head_dir), str(slide), str(result)]
+	return ""
+
+func test_hammer_strikes_sliding_block() -> String:
+	var world := _hammer_world()
+	var gm: GridManager = world[0]
+	var player = world[1]
+	var failure := ""
+	# From the left: stops beside the head, the head swings to LEFT, the block is launched up and slides to y=2.
+	var dest: Vector2i = player.calculate_slide_path_on_ground(Vector2i(3, 4), Vector2i.RIGHT)
+	if dest != Vector2i(5, 2) or player.last_slide_strikes.size() != 1:
+		failure = "A block from the left must be struck up to (5,2), got %s with %d strikes" % [str(dest), player.last_slide_strikes.size()]
+	elif gm.get_hammer_dir(Vector2i(6, 5)) != Vector2i.LEFT or player.last_slide_strikes[0]["quarter_turns"] != 3:
+		failure = "The head must end LEFT after a 3/4 clockwise turn"
+	elif not gm.is_hammer_swinging(Vector2i(6, 5)) or not gm.has_hammer(Vector2i(6, 4)):
+		failure = "The swept cells must stay solid while the head swings"
+	gm.finish_hammer_swing(Vector2i(6, 5))
+	# The hammer keeps its new position: head LEFT at (5,5). A block from the right stops against the pivot.
+	if failure.is_empty():
+		var tip: Vector2i = player.calculate_slide_path_on_ground(Vector2i(10, 5), Vector2i.LEFT)
+		if tip != Vector2i(7, 5) or not player.last_slide_strikes.is_empty():
+			failure = "The head points LEFT: a block from the right must stop at (7,5) against the pivot, got %s" % str(tip)
+	# A block from below meets the side of the LEFT head and is launched left.
+	if failure.is_empty():
+		var again: Vector2i = player.calculate_slide_path_on_ground(Vector2i(5, 9), Vector2i.UP)
+		if again != Vector2i(2, 6) or player.last_slide_strikes.size() != 1:
+			failure = "A block from below must hit the side of the LEFT head and be launched left, got %s" % str(again)
+	player.free()
+	gm.free()
+	return failure
+
+func test_hammer_mirror_image_and_walls() -> String:
+	var world := _hammer_world()
+	var gm: GridManager = world[0]
+	var player = world[1]
+	var failure := ""
+	var from_right: Vector2i = player.calculate_slide_path_on_ground(Vector2i(10, 4), Vector2i.LEFT)
+	if from_right != Vector2i(7, 2) or gm.get_hammer_dir(Vector2i(6, 5)) != Vector2i.RIGHT or player.last_slide_strikes[0]["quarter_turns"] != -3:
+		failure = "A block from the right must turn the head 3/4 counter-clockwise to RIGHT and land at (7,2), got %s" % str(from_right)
+	gm.finish_hammer_swing(Vector2i(6, 5))
+	gm.set_hammer(Vector2i(6, 5), Vector2i.UP)
+	if failure.is_empty():
+		var tip: Vector2i = player.calculate_slide_path_on_ground(Vector2i(6, 2), Vector2i.DOWN)
+		if tip != Vector2i(6, 3) or not player.last_slide_strikes.is_empty() or gm.get_hammer_dir(Vector2i(6, 5)) != Vector2i.UP:
+			failure = "The top of the head must stop a block like a wall, without a swing, got %s" % str(tip)
+	if failure.is_empty():
+		var pivot: Vector2i = player.calculate_slide_path_on_ground(Vector2i(3, 5), Vector2i.RIGHT)
+		if pivot != Vector2i(5, 5) or not player.last_slide_strikes.is_empty():
+			failure = "The pivot must stop a block like a wall, got %s" % str(pivot)
+	# No room to launch (wall above the stop cell): the hammer refuses to swing and the block just stops.
+	if failure.is_empty():
+		gm.set_tile(Vector2i(5, 3), Constants.TileType.WALL)
+		var blocked: Vector2i = player.calculate_slide_path_on_ground(Vector2i(3, 4), Vector2i.RIGHT)
+		if blocked != Vector2i(5, 4) or gm.get_hammer_dir(Vector2i(6, 5)) != Vector2i.UP:
+			failure = "A hammer with no room to launch must not swing, got %s" % str(blocked)
+		gm.set_tile(Vector2i(5, 3), Constants.TileType.GROUND)
+	# A wall on the sweep path: the head cannot turn, so the block is stopped.
+	if failure.is_empty():
+		gm.set_tile(Vector2i(7, 5), Constants.TileType.WALL)
+		var swept: Vector2i = player.calculate_slide_path_on_ground(Vector2i(3, 4), Vector2i.RIGHT)
+		if swept != Vector2i(5, 4) or gm.get_hammer_dir(Vector2i(6, 5)) != Vector2i.UP:
+			failure = "A head whose sweep is blocked must not turn, got %s" % str(swept)
+	player.free()
+	gm.free()
+	return failure
+
+func test_hero_pushes_hammer_and_hammer_is_solid() -> String:
+	var world := _hammer_world()
+	var gm: GridManager = world[0]
+	var player = world[1]
+	var failure := ""
+	if gm.is_walkable(Vector2i(6, 5)) or gm.is_walkable(Vector2i(6, 4)) or not gm.is_walkable(Vector2i(7, 5)):
+		failure = "The pivot and the head must be solid, the cells around them free"
+	player.current_grid_pos = Vector2i(5, 4)
+	if failure.is_empty() and (not player.try_push_hammer(Vector2i(6, 4), Vector2i.RIGHT) or gm.get_hammer_dir(Vector2i(6, 5)) != Vector2i.RIGHT):
+		failure = "The hero beside the head must turn it a quarter turn away from himself"
+	gm.finish_hammer_swing(Vector2i(6, 5))
+	gm.set_hammer(Vector2i(6, 5), Vector2i.UP)
+	player.current_grid_pos = Vector2i(6, 3)
+	if failure.is_empty() and player.try_push_hammer(Vector2i(6, 4), Vector2i.DOWN):
+		failure = "The hero must not be able to push the tip of the head"
+	if failure.is_empty() and player.try_push_hammer(Vector2i(6, 5), Vector2i.DOWN):
+		failure = "The pivot is not a head: it cannot be pushed"
+	player.current_grid_pos = Vector2i(5, 5)   # on the cell the head would swing into when pushed LEFT
+	if failure.is_empty() and player.try_push_hammer(Vector2i(6, 4), Vector2i.LEFT):
+		failure = "The head must not sweep through the hero"
+	if failure.is_empty() and gm.get_hammer_dir(Vector2i(6, 5)) != Vector2i.UP:
+		failure = "A refused push must leave the head where it was"
+	gm.turn_hammer(Vector2i(6, 5), Vector2i.RIGHT)
+	if failure.is_empty() and (not gm.has_hammer(Vector2i(6, 4)) or not gm.has_hammer(Vector2i(7, 5))):
+		failure = "Both the old and the new head cell must be solid during a swing"
+	gm.finish_hammer_swing(Vector2i(6, 5))
+	if failure.is_empty() and gm.has_hammer(Vector2i(6, 4)):
+		failure = "The old head cell must be free again once the swing is over"
+	player.free()
+	gm.free()
+	return failure
+
+func test_hammer_level_format_editor_and_checker() -> String:
+	var loader = load("res://Scripts/level_json_loader.gd").new()
+	var checker = load("res://Scripts/level_checker.gd")
+	var doc: Dictionary = _editor_test_document()
+	doc["hammers"] = [{"pos": [6, 5], "direction": "up"}]
+	var parsed: Dictionary = loader.parse_text(JSON.stringify(doc))
+	if not parsed.get("ok", false) or parsed["data"].hammers.size() != 1 or parsed["data"].hammers[0]["direction"] != Vector2i.UP:
+		return "A level with a hammer must load: %s" % str(parsed.get("error", ""))
+	for bad in [{"pos": [6, 5], "direction": "sideways"}, {"pos": [0, 5], "direction": "up"}, {"pos": [6, 14], "direction": "up"}, {"pos": [20, 5], "direction": "up"}]:
+		var broken: Dictionary = doc.duplicate(true)
+		broken["hammers"] = [bad]
+		if loader.parse_text(JSON.stringify(broken)).get("ok", false):
+			return "A malformed or border hammer must be rejected: %s" % str(bad)
+	if not checker.check(doc).is_empty():
+		return "A clear hammer must raise no warning: %s" % str(checker.check(doc))
+	var walled: Dictionary = doc.duplicate(true)
+	_set_test_tile(walled, Vector2i(7, 5), "#")
+	if checker.check(walled).is_empty():
+		return "A wall in the sweep area of a hammer must be reported"
+	var twins: Dictionary = doc.duplicate(true)
+	twins["hammers"] = [{"pos": [6, 5], "direction": "up"}, {"pos": [8, 5], "direction": "down"}]
+	if checker.check(twins).is_empty():
+		return "Two hammers whose areas overlap must be reported"
+	return _check_hammer_editor_tool()
+
+func _check_hammer_editor_tool() -> String:
+	var editor = load("res://Tools/level_editor.gd").new()
+	editor._build_interface()
+	editor.document = _editor_test_document()
+	editor.active_tool = 19
+	editor._on_cell_selected(Vector2i(6, 5))
+	var result := ""
+	if editor.document["hammers"].size() != 1 or editor.document["hammers"][0]["direction"] != "right":
+		result = "The hammer tool must place a hammer facing the chosen direction"
+	editor._on_cell_selected(Vector2i(6, 5))
+	if result.is_empty() and editor.document["hammers"][0]["direction"] != "down":
+		result = "Clicking a hammer again must turn its head a quarter turn clockwise"
+	if result.is_empty():
+		editor.notice_dialog = AcceptDialog.new()
+		editor._on_cell_selected(Vector2i(0, 5))
+		if editor.document["hammers"].size() != 1:
+			result = "A hammer on the border of the grid must be refused"
+		editor.notice_dialog.free()
+	if result.is_empty():
+		editor._on_cell_erased(Vector2i(6, 5))
+		if not editor.document["hammers"].is_empty():
+			result = "Erasing the pivot cell must remove the hammer"
+	editor.free()
+	return result
 
 func test_slide_path_calculation():
 	var gm = GridManager.new()

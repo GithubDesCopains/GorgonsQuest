@@ -41,7 +41,7 @@ func try_patrol_move():
 		patrol_index = (patrol_index + 1) % patrol_pattern.size()
 
 func can_fly_over(pos: Vector2i) -> bool:
-	if not grid_manager.is_valid_grid_pos(pos) or grid_manager.has_spawner(pos) or grid_manager.has_mirror(pos):
+	if not grid_manager.is_valid_grid_pos(pos) or grid_manager.has_spawner(pos) or grid_manager.has_mirror(pos) or grid_manager.has_hammer(pos):
 		return false
 	if grid_manager.edge_blocked(current_grid_pos, pos):
 		return false  # a closed door stops flyers too
