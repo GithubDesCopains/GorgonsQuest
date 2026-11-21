@@ -13,12 +13,12 @@ const DONE_COLOR   := Color("7EC8A4")   # Vert complété
 const BOSS_COLOR   := Color("C04040")   # Rouge boss
 const HERO_COLOR   := Color("4A90E2")   # Bleu héros
 
-# Chemin des cases pour le Monde 1 : 16 niveaux + 1 boss
+# Chemin des cases, commun aux quatre mondes : 19 niveaux de puzzle + 1 boss (Constants.LEVELS_PER_WORLD)
 # Chaque entrée = offset depuis l'origine en cases [col, row]
-const WORLD_1_PATH := [
-	Vector2i(0, 6),   # Niveau 1  - Garden Land A
-	Vector2i(1, 6),   # Niveau 2  - Garden Land B
-	Vector2i(2, 6),   # Niveau 3  - Garden Land C
+const LEVEL_PATH := [
+	Vector2i(0, 6),   # Niveau 1
+	Vector2i(1, 6),   # Niveau 2
+	Vector2i(2, 6),   # Niveau 3
 	Vector2i(3, 6),   # Niveau 4
 	Vector2i(4, 6),   # Niveau 5
 	Vector2i(4, 5),   # Niveau 6
@@ -32,7 +32,10 @@ const WORLD_1_PATH := [
 	Vector2i(9, 2),   # Niveau 14
 	Vector2i(9, 1),   # Niveau 15
 	Vector2i(10, 1),  # Niveau 16
-	Vector2i(10, 0),  # Niveau 17 (Boss : Cyclope)
+	Vector2i(11, 1),  # Niveau 17
+	Vector2i(11, 0),  # Niveau 18
+	Vector2i(12, 0),  # Niveau 19
+	Vector2i(13, 0),  # Niveau 20 (Boss)
 ]
 
 var save_manager: Node = null
@@ -49,7 +52,7 @@ func _ready() -> void:
 	save_manager = load("res://Scripts/save_manager.gd").new()
 	add_child(save_manager)
 	max_unlocked = save_manager.get_max_level(current_world)
-	selected_index = clampi(max_unlocked - 1, 0, WORLD_1_PATH.size() - 1)
+	selected_index = clampi(max_unlocked - 1, 0, LEVEL_PATH.size() - 1)
 	queue_redraw()
 
 func _draw() -> void:
@@ -58,7 +61,7 @@ func _draw() -> void:
 	_draw_hero_cursor()
 
 func _draw_path_connections() -> void:
-	for i in range(WORLD_1_PATH.size() - 1):
+	for i in range(LEVEL_PATH.size() - 1):
 		var a: Vector2 = _node_center(i)
 		var b: Vector2 = _node_center(i + 1)
 		var unlocked: bool = (i + 1) < max_unlocked
@@ -66,10 +69,10 @@ func _draw_path_connections() -> void:
 		draw_line(a, b, col, 6.0)
 
 func _draw_level_nodes() -> void:
-	for i in range(WORLD_1_PATH.size()):
+	for i in range(LEVEL_PATH.size()):
 		var center: Vector2 = _node_center(i)
 		var level_num: int = i + 1
-		var is_boss: bool = level_num == 17
+		var is_boss: bool = level_num == Constants.BOSS_LEVEL
 		var is_done: bool  = level_num < max_unlocked
 		var is_open: bool  = level_num == max_unlocked
 		var is_locked: bool = level_num > max_unlocked
@@ -104,7 +107,7 @@ func _draw_hero_cursor() -> void:
 	draw_colored_polygon(pts, HERO_COLOR)
 
 func _node_center(index: int) -> Vector2:
-	var grid_pos: Vector2i = WORLD_1_PATH[index]
+	var grid_pos: Vector2i = LEVEL_PATH[index]
 	var origin := Vector2(80, 80)
 	return origin + Vector2(grid_pos) * TILE_SIZE + Vector2(TILE_SIZE * 0.5, TILE_SIZE * 0.5)
 
@@ -123,7 +126,7 @@ func _input(event: InputEvent) -> void:
 		_select_level()
 
 func _move_cursor(delta: int) -> void:
-	var new_idx := clampi(selected_index + delta, 0, min(max_unlocked - 1, WORLD_1_PATH.size() - 1))
+	var new_idx := clampi(selected_index + delta, 0, min(max_unlocked - 1, LEVEL_PATH.size() - 1))
 	if new_idx != selected_index:
 		selected_index = new_idx
 		queue_redraw()
@@ -142,7 +145,7 @@ func _select_level() -> void:
 
 func unlock_next_level() -> void:
 	"""Appelée après victoire pour débloquer le niveau suivant avec animation"""
-	if max_unlocked < WORLD_1_PATH.size():
+	if max_unlocked < LEVEL_PATH.size():
 		max_unlocked += 1
 		selected_index = max_unlocked - 1
 		# Animation de déblocage
@@ -158,5 +161,5 @@ func refresh_from_save() -> void:
 	"""Recharge la progression depuis SaveManager"""
 	if save_manager:
 		max_unlocked = save_manager.get_max_level(current_world)
-	selected_index = clampi(max_unlocked - 1, 0, WORLD_1_PATH.size() - 1)
+	selected_index = clampi(max_unlocked - 1, 0, LEVEL_PATH.size() - 1)
 	queue_redraw()

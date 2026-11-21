@@ -13,7 +13,7 @@ func run_integration():
 		push_error("GameManager missing")
 		quit(1)
 		return
-	game_manager.level_manager.load_level(1, 16)
+	game_manager.level_manager.load_level(1, Constants.BOSS_LEVEL)
 	await create_timer(0.5).timeout
 	if not is_instance_valid(game_manager.boss):
 		push_error("Boss level did not instantiate boss")

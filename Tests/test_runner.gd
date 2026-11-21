@@ -1,4 +1,4 @@
-﻿extends SceneTree
+extends SceneTree
 
 ## Automated Regression Test Runner for Gorgon's Debt
 
@@ -1945,10 +1945,10 @@ func test_task_5_7_save_manager() -> String:
 	if sm.get_total_score() != 4000:
 		return "Total score should accumulate to 4000"
 	
-	# 4. Next world unlocked after level 17
-	sm.record_level_completion(1, 17, 5000)
+	# 4. Next world unlocked after the boss (level 20)
+	sm.record_level_completion(1, Constants.BOSS_LEVEL, 5000)
 	if sm.get_max_world() != 2:
-		return "World 2 should unlock after completing world 1 level 17"
+		return "World 2 should unlock after completing the world 1 boss"
 	
 	# 5. Settings
 	sm.set_music_volume(0.5)
@@ -2001,12 +2001,12 @@ func test_task_6_1_overworld_map_logic() -> String:
 	var om = load("res://Scenes/overworld_map.gd").new()
 	
 	# 1. Chemin dÃ©fini avec 17 entrÃ©es (16 niveaux + 1 boss)
-	if om.WORLD_1_PATH.size() != 17:
-		return "WORLD_1_PATH should have 17 entries (16 levels + 1 boss), got %d" % om.WORLD_1_PATH.size()
+	if om.LEVEL_PATH.size() != Constants.LEVELS_PER_WORLD:
+		return "LEVEL_PATH should have %d entries (19 puzzles + 1 boss), got %d" % [Constants.LEVELS_PER_WORLD, om.LEVEL_PATH.size()]
 	
 	# 2. Toutes les cases du chemin ont des coordonnÃ©es valides (>= 0)
-	for i in range(om.WORLD_1_PATH.size()):
-		var cell: Vector2i = om.WORLD_1_PATH[i]
+	for i in range(om.LEVEL_PATH.size()):
+		var cell: Vector2i = om.LEVEL_PATH[i]
 		if cell.x < 0 or cell.y < 0:
 			return "Path node %d has negative coordinates %s" % [i, str(cell)]
 	
@@ -2065,11 +2065,11 @@ func test_task_6_2_progressive_unlock() -> String:
 	if sm.get_max_level(1) != 3:
 		return "Replaying level 1 should not reduce max_level"
 	
-	# 5. ComplÃ©ter niveau 17 dÃ©bloque le Monde 2
-	for lvl in range(3, 18):
+	# 5. Completing the boss (level 20) unlocks world 2
+	for lvl in range(3, Constants.LEVELS_PER_WORLD + 1):
 		sm.record_level_completion(1, lvl, 100)
 	if sm.get_max_world() != 2:
-		return "Completing world 1 (level 17) should unlock world 2"
+		return "Completing world 1 (the level %d boss) should unlock world 2" % Constants.BOSS_LEVEL
 	
 	# 6. Monde 2 commence avec niveau 1 dÃ©bloquÃ©
 	if sm.get_max_level(2) != 1:
@@ -2086,9 +2086,9 @@ func test_task_6_2_progressive_unlock() -> String:
 		return "unlock_next_level should move selected_index to 1"
 	
 	# 8. unlock_next_level ne dÃ©passe pas la taille du chemin
-	om.max_unlocked = om.WORLD_1_PATH.size()
+	om.max_unlocked = om.LEVEL_PATH.size()
 	om.unlock_next_level()
-	if om.max_unlocked != om.WORLD_1_PATH.size():
+	if om.max_unlocked != om.LEVEL_PATH.size():
 		return "unlock_next_level should not exceed path size"
 	sm.reset_save()
 	var progression_fixture_left := FileAccess.file_exists(sm.save_path)

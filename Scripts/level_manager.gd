@@ -4,8 +4,8 @@ extends Node
 
 var current_world: int = 1
 var current_level: int = 1
-var max_world: int = 4
-var levels_per_world: int = 17  # Original has 17 levels per world
+var max_world: int = Constants.WORLDS
+var levels_per_world: int = Constants.LEVELS_PER_WORLD  # 19 puzzles, then the boss
 
 var game_manager: Node
 var current_level_data: LevelData
@@ -50,11 +50,11 @@ func get_level_data(world: int, level: int) -> LevelData:
 		push_warning("Ignoring invalid level JSON %s: %s" % [json_path, result.get("error", "unknown error")])
 	
 	# Legacy factory fallback for levels not migrated to JSON yet.
-	if world == 2 and level == 17:
+	if world == 2 and level == Constants.BOSS_LEVEL:
 		return LevelData.create_hydra_boss_level()
-	if world == 3 and level == 17:
+	if world == 3 and level == Constants.BOSS_LEVEL:
 		return LevelData.create_chimera_boss_level()
-	if world == 4 and level == 17:
+	if world == 4 and level == Constants.BOSS_LEVEL:
 		return LevelData.create_medusa_boss_level()
 	if world == 1:
 		match level:
@@ -64,7 +64,7 @@ func get_level_data(world: int, level: int) -> LevelData:
 				return LevelData.create_level_1_2()
 			3:
 				return LevelData.create_level_1_3()
-			16, 17:
+			Constants.BOSS_LEVEL:
 				return LevelData.create_boss_test_level()
 			_:
 				# Fallback to test level

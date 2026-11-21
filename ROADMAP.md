@@ -131,15 +131,17 @@ Les tâches sont ordonnées par priorité et dépendance technique afin d'être 
   - Schéma JSON, validation, conversion `LevelData` et fallback legacy implémentés; tuiles spéciales et boss pris en charge.
   - `res://Data/Levels/world_1_level_1.json` sert de niveau source; les autres niveaux migreront avec TASK-5.2 à TASK-5.6.
 
-- [x] **TASK-5.2 : Reproduction des 17 niveaux du Monde 1 (Jardins / Îles)**
+- [x] **TASK-5.2 : Monde 1 (Jardins / Îles) : 20 niveaux**
   - 15 niveaux de puzzle (Garden Land A à O) transcrits au format JSON dans `Data/Levels/world_1_level_1.json` à `world_1_level_15.json` avec difficulté croissante.
-  - Niveaux 16 et 17 configurés pour l'arène du Cyclope Polyphème.
+  - **Structure décidée : 20 niveaux par monde, boss compris** (`Constants.LEVELS_PER_WORLD`, `Constants.BOSS_LEVEL`). Le boss est le niveau 20; l'arène du Cyclope Polyphème y est branchée. Les niveaux 16 à 19 du monde 1 restent à écrire.
   - Tous les niveaux validés via tests automatisés et test d'intégration.
 
-### ⏸️ Niveaux mis en attente (contenu pur, reporté après le socle gameplay/systèmes) :
-- [⏸️] **TASK-5.3 : Reproduction des 17 niveaux du Monde 2 (Enfers d'Hadès)** *(reporté)*
-- [⏸️] **TASK-5.4 : Reproduction des 17 niveaux du Monde 3 (Mont Olympe)** *(reporté)*
-- [⏸️] **TASK-5.5 : Reproduction des 17 niveaux du Monde 4 (Labyrinthe du Minotaure)** *(reporté)*
+### 🧱 Contenu des mondes (19 puzzles + 1 boss chacun)
+Progression voulue : le **monde 1** reste facile et enseigne les bases (regard, pousser, ponts, ressorts, rotateurs, tapis, portes à sens unique, téléporteurs); **à partir du monde 2**, la complexité monte avec les miroirs, les interrupteurs/portes et les marteaux.
+- [⏸️] **TASK-5.2b : Monde 1, niveaux 16 à 19** *(à écrire, sans mécanique avancée)*
+- [⏸️] **TASK-5.3 : Monde 2 (Enfers d'Hadès) : 19 niveaux + Hydre (niveau 20)** *(reporté)*
+- [⏸️] **TASK-5.4 : Monde 3 (Mont Olympe) : 19 niveaux + Chimère (niveau 20)** *(reporté)*
+- [⏸️] **TASK-5.5 : Monde 4 (Labyrinthe du Minotaure) : 19 niveaux + Méduse (niveau 20)** *(reporté)*
 - [⏸️] **TASK-5.6 : Mode "Special Game" (30 niveaux expert)** *(reporté)*
 
 ### 🚀 Reprise du développement cœur :
@@ -287,7 +289,7 @@ Les tâches sont ordonnées par priorité et dépendance technique afin d'être 
 - [x] **TASK-9.2 : Musiques d'événements & Boss**
   - `SoundManager.generate_sfx()` synthétise en 16 bits (tons + bruit filtré mixés dans un tampon flottant), déterministe et mis en cache.
   - Thème de boss en boucle (148 BPM, riff phrygien, basse, grosse caisse, caisse claire) : `play_boss_music()` au spawn du boss, `end_boss_music()` rend le thème du monde à sa défaite.
-  - Fanfare de fin de niveau; fanfare longue pour la victoire finale (monde 4, niveau 17); jingle de Game Over en ligne mineure descendante.
+  - Fanfare de fin de niveau; fanfare longue pour la victoire finale (monde 4, niveau 20); jingle de Game Over en ligne mineure descendante.
   - Remarque : la musique reste coupée par `MUSIC_ENABLED := false` (décision antérieure, trop forte); le thème de boss en dépend aussi. Les fanfares et jingles sont des SFX et restent audibles.
 
 - [x] **TASK-9.3 : Bruitages haute fidélité (SFX)**

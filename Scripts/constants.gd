@@ -3,6 +3,11 @@ extends Node
 ## Game Constants - Gorgon's Quest
 ## Grid-based puzzle game inspired by Kickle Cubicle
 
+# Campaign structure: every world has 20 levels, the last one being the boss.
+const WORLDS = 4
+const LEVELS_PER_WORLD = 20
+const BOSS_LEVEL = LEVELS_PER_WORLD
+
 # Display & Resolution
 const VIEWPORT_WIDTH = 1920
 const VIEWPORT_HEIGHT = 1080

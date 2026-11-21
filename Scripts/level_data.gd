@@ -202,8 +202,8 @@ static func create_level_1_2() -> LevelData:
 	return lvl
 
 static func create_boss_test_level() -> LevelData:
-	"""World 1 level 16 boss arena: Polyphemus."""
-	var lvl = LevelData.new(1, 16)
+	"""World 1 boss arena (level 20): Polyphemus."""
+	var lvl = LevelData.new(1, Constants.BOSS_LEVEL)
 	lvl.level_name = "Polyphemus Arena"
 	lvl.is_boss_level = true
 	lvl.boss_type = "cyclops"
@@ -231,7 +231,7 @@ static func create_boss_test_level() -> LevelData:
 
 static func create_hydra_boss_level() -> LevelData:
 	"""World 2 boss arena fixture for the Lernaean Hydra."""
-	var lvl = LevelData.new(2, 17)
+	var lvl = LevelData.new(2, Constants.BOSS_LEVEL)
 	lvl.level_name = "Lernaean Hydra Arena"
 	lvl.is_boss_level = true
 	lvl.boss_type = "hydra"
@@ -261,7 +261,7 @@ static func create_hydra_boss_level() -> LevelData:
 
 static func create_chimera_boss_level() -> LevelData:
 	"""World 3 boss arena fixture for the Chimera."""
-	var lvl = LevelData.new(3, 17)
+	var lvl = LevelData.new(3, Constants.BOSS_LEVEL)
 	lvl.level_name = "Chimera Arena"
 	lvl.is_boss_level = true
 	lvl.boss_type = "chimera"
@@ -289,7 +289,7 @@ static func create_chimera_boss_level() -> LevelData:
 
 static func create_medusa_boss_level() -> LevelData:
 	"""World 4 final arena fixture for Medusa, the original Gorgon."""
-	var lvl = LevelData.new(4, 17)
+	var lvl = LevelData.new(4, Constants.BOSS_LEVEL)
 	lvl.level_name = "Medusa's Final Sanctum"
 	lvl.is_boss_level = true
 	lvl.boss_type = "medusa"

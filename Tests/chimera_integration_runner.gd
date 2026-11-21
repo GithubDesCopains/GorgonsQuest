@@ -13,7 +13,7 @@ func run_integration():
 		push_error("GameManager missing")
 		quit(1)
 		return
-	gm.level_manager.load_level(3, 17)
+	gm.level_manager.load_level(3, Constants.BOSS_LEVEL)
 	await create_timer(0.4).timeout
 	if not is_instance_valid(gm.boss):
 		push_error("Chimera boss level did not instantiate boss")

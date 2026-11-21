@@ -87,7 +87,7 @@ func record_level_completion(world: int, level: int, score: int) -> void:
 		var key := "max_level_w%d" % world
 		save_data[key] = level + 1
 	# Unlock next world if final level of world beaten
-	if level >= 17 and world >= get_max_world():
+	if level >= Constants.BOSS_LEVEL and world >= get_max_world():
 		save_data["max_world"] = world + 1
 	# Best score
 	_update_best_score(world, level, score)
@@ -137,7 +137,7 @@ func _validated_data(parsed: Dictionary) -> Dictionary:
 	clean["total_score"] = int(clampf(_num(parsed.get("total_score", 0), 0.0), 0.0, MAX_SCORE))
 	for world in range(1, 5):
 		var level_key := "max_level_w%d" % world
-		clean[level_key] = clampi(int(clampf(_num(parsed.get(level_key, 1), 1.0), 1.0, 17.0)), 1, 17)
+		clean[level_key] = clampi(int(clampf(_num(parsed.get(level_key, 1), 1.0), 1.0, float(Constants.LEVELS_PER_WORLD))), 1, Constants.LEVELS_PER_WORLD)
 	for key in parsed.keys():
 		if key is String and key.length() <= 16 and key.begins_with("best_"):
 			clean[key] = int(clampf(_num(parsed[key], 0.0), 0.0, MAX_SCORE))
